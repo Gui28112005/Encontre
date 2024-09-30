@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Comércios</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background: #28a745;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input, textarea, select {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 20px);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        h2 {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .comercio-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .comercio-item {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            width: 300px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .comercio-item img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Gerenciador de Comércios</h1>
+    </header>
+    
+    <div class="container">
+        <h2 id="formTitle">Cadastrar Comércio</h2>
+        <input type="text" id="nome" placeholder="Nome do Comércio" required>
+        <label for="categoria">Categoria:</label>
+        <select id="categoria" required>
+            <option value="" disabled selected>Selecione uma categoria</option>
+            <option value="pizzaria">Pizzaria</option>
+            <option value="lanchonete">Lanchonete</option>
+            <option value="restaurante">Restaurante</option>
+            <option value="igreja">Igreja</option>
+            <option value="comercio">Comércio</option>
+            <option value="ponto turistico">Ponto Turístico</option>
+            <option value="sorveteria">Sorveteria</option>
+            <option value="açaiteria">Açaiteria</option>
+            <option value="shopping">Shopping</option>
+            <option value="evento">Evento</option>
+            <option value="cinema">Cinema</option>
+        </select>
+        <input type="text" id="cidade" placeholder="Cidade" required>
+        <input type="text" id="estado" placeholder="Estado" required>
+        <input type="text" id="telefone" placeholder="Telefone" required>
+        <input type="text" id="horario_funcionamento" placeholder="Horário de Funcionamento" required>
+        <input type="text" id="horario_funcionamento_feriados" placeholder="Horário de Funcionamento Feriados">
+        <input type="text" id="link_cardapio" placeholder="Link do Cardápio">
+        <textarea id="descricao" placeholder="Descrição" rows="3"></textarea>
+        <input type="text" id="imagem_capa" placeholder="URL da Imagem de Capa">
+        <input type="text" id="link_facebook" placeholder="Link do Facebook">
+        <input type="text" id="link_instagram" placeholder="Link do Instagram">
+        <input type="text" id="link_site_pessoal" placeholder="Link do Site Pessoal">
+        <button id="saveButton" onclick="cadastrarComercio()">Cadastrar</button>
+    
+        <h2>Comércios Cadastrados</h2>
+        <div class="comercio-list" id="comercioList"></div>
+    </div>
+    
+    <script>
+    let currentComercioId = null;
+    
+    async function cadastrarComercio() {
+        const comercioData = getComercioData();
+    
+        if (currentComercioId) {
+            // Atualiza o comércio existente
+            await fetch(`http://localhost:8080/comercio/${currentComercioId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(comercioData)
+            });
+            alert('Comércio atualizado com sucesso!');
+        } else {
+            // Cadastra um novo comércio
+            await fetch('http://localhost:8080/comercio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(comercioData)
+            });
+            alert('Comércio cadastrado com sucesso!');
+        }
+    
+        resetForm();
+        await carregarComercios();
+    }
+    
+    function getComercioData() {
+        return {
+            nome: document.getElementById('nome').value,
+            categoria: document.getElementById('categoria').value,
+            cidade: document.getElementById('cidade').value,
+            estado: document.getElementById('estado').value,
+            telefone: document.getElementById('telefone').value,
+            horario_funcionamento: document.getElementById('horario_funcionamento').value,
+            horario_funcionamento_feriados: document.getElementById('horario_funcionamento_feriados').value,
+            link_cardapio: document.getElementById('link_cardapio').value,
+            descricao: document.getElementById('descricao').value,
+            imagem_capa: document.getElementById('imagem_capa').value,
+            link_facebook: document.getElementById('link_facebook').value,
+            link_instagram: document.getElementById('link_instagram').value,
+            link_site_pessoal: document.getElementById('link_site_pessoal').value
+        };
+    }
+    
+    function resetForm() {
+        currentComercioId = null;
+        document.getElementById('formTitle').innerText = 'Cadastrar Comércio';
+        document.getElementById('saveButton').innerText = 'Cadastrar';
+        document.getElementById('nome').value = '';
+        document.getElementById('categoria').value = '';
+        document.getElementById('cidade').value = '';
+        document.getElementById('estado').value = '';
+        document.getElementById('telefone').value = '';
+        document.getElementById('horario_funcionamento').value = '';
+        document.getElementById('horario_funcionamento_feriados').value = '';
+        document.getElementById('link_cardapio').value = '';
+        document.getElementById('descricao').value = '';
+        document.getElementById('imagem_capa').value = '';
+        document.getElementById('link_facebook').value = '';
+        document.getElementById('link_instagram').value = '';
+        document.getElementById('link_site_pessoal').value = '';
+    }
+    
+    async function carregarComercios() {
+        const response = await fetch('http://localhost:8080/comercio');
+        const comercios = await response.json();
+        renderComercios(comercios);
+    }
+    
+    function renderComercios(comercios) {
+        const comercioList = document.getElementById('comercioList');
+        comercioList.innerHTML = '';
+        comercios.forEach(comercio => {
+            const item = document.createElement('div');
+            item.classList.add('comercio-item');
+            item.innerHTML = `
+                <img src="${comercio.imagem_capa || 'default-image.jpg'}" alt="${comercio.nome}">
+                <div class="comercio-details">
+                    <strong>${comercio.nome}</strong>
+                    <p><strong>Categoria:</strong> ${comercio.categoria}</p>
+                    <p><strong>Cidade:</strong> ${comercio.cidade}</p>
+                    <p><strong>Estado:</strong> ${comercio.estado}</p>
+                    <p><strong>Telefone:</strong> ${comercio.telefone}</p>
+                    <p><strong>Horário de Funcionamento:</strong> ${comercio.horario_funcionamento}</p>
+                    <p><strong>Descrição:</strong> ${comercio.descricao}</p>
+                    <button onclick="editarComercio(${comercio.id})">Editar</button>
+                    <button onclick="deletarComercio(${comercio.id})">Excluir</button>
+                </div>
+            `;
+            comercioList.appendChild(item);
+        });
+    }
+    
+    function editarComercio(id) {
+        currentComercioId = id;
+        document.getElementById('formTitle').innerText = 'Editar Comércio';
+        document.getElementById('saveButton').innerText = 'Salvar';
+    
+        fetch(`http://localhost:8080/comercio/${id}`)
+            .then(response => response.json())
+            .then(comercio => {
+                document.getElementById('nome').value = comercio.nome;
+                document.getElementById('categoria').value = comercio.categoria;
+                document.getElementById('cidade').value = comercio.cidade;
+                document.getElementById('estado').value = comercio.estado;
+                document.getElementById('telefone').value = comercio.telefone;
+                document.getElementById('horario_funcionamento').value = comercio.horario_funcionamento;
+                document.getElementById('horario_funcionamento_feriados').value = comercio.horario_funcionamento_feriados;
+                document.getElementById('link_cardapio').value = comercio.link_cardapio;
+                document.getElementById('descricao').value = comercio.descricao;
+                document.getElementById('imagem_capa').value = comercio.imagem_capa;
+                document.getElementById('link_facebook').value = comercio.link_facebook;
+                document.getElementById('link_instagram').value = comercio.link_instagram;
+                document.getElementById('link_site_pessoal').value = comercio.link_site_pessoal;
+            });
+    }
+    
+    async function deletarComercio(id) {
+        if (confirm('Você tem certeza que deseja excluir este comércio?')) {
+            await fetch(`http://localhost:8080/comercio/${id}`, {
+                method: 'DELETE'
+            });
+            alert('Comércio excluído com sucesso!');
+            await carregarComercios();
+        }
+    }
+    
+    // Carregar os comércios ao iniciar a página
+    window.onload = carregarComercios;
+    </script>
+    
+    </body>
+    </html>
