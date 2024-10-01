@@ -131,7 +131,7 @@
     
         if (currentComercioId) {
             // Atualiza o comércio existente
-            await fetch(`http://localhost:8080/comercio/${currentComercioId}`, {
+            await fetch(`https://backendencontre01.azurewebsites.net/comercio/${currentComercioId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -141,7 +141,7 @@
             alert('Comércio atualizado com sucesso!');
         } else {
             // Cadastra um novo comércio
-            await fetch('http://localhost:8080/comercio', {
+            await fetch('https://backendencontre01.azurewebsites.net/comercio', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -193,7 +193,7 @@
     }
     
     async function carregarComercios() {
-        const response = await fetch('http://localhost:8080/comercio');
+        const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
         const comercios = await response.json();
         renderComercios(comercios);
     }
@@ -227,7 +227,7 @@
         document.getElementById('formTitle').innerText = 'Editar Comércio';
         document.getElementById('saveButton').innerText = 'Salvar';
     
-        fetch(`http://localhost:8080/comercio/${id}`)
+        fetch(`https://backendencontre01.azurewebsites.net/comercio/${id}`)
             .then(response => response.json())
             .then(comercio => {
                 document.getElementById('nome').value = comercio.nome;
@@ -248,7 +248,7 @@
     
     async function deletarComercio(id) {
         if (confirm('Você tem certeza que deseja excluir este comércio?')) {
-            await fetch(`http://localhost:8080/comercio/${id}`, {
+            await fetch(`https://backendencontre01.azurewebsites.net/comercio/${id}`, {
                 method: 'DELETE'
             });
             alert('Comércio excluído com sucesso!');
