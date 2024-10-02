@@ -38,8 +38,41 @@ const categoriasPermitidas = [
     'açaiteria', 
     'shopping', 
     'evento', 
-    'cinema'
+    'cinema',
+    'mecanica',
+    'Seguros',
+    'cafeteria',
+    'mercado',
+    'bar',
+    'academia',
+    'livraria',
+    'pet shop',
+    'serviços de beleza',
+    'clube',
+    'feira de artesanato',
+    'centro cultural',
+    'restaurante vegetariano', // Nova categoria
+    'cervejaria',              // Nova categoria
+    'atelie',                 // Nova categoria
+    'salao de beleza',        // Nova categoria
+    'farmacia',               // Nova categoria
+    'estudio de fotografia',   // Nova categoria
+    'casa de shows',          // Nova categoria
+    'escola de musica',       // Nova categoria
+    'clinica de estetica',    // Nova categoria
+    'estudio de yoga',        // Nova categoria
+    'espaco coworking',       // Nova categoria
+    'centro esportivo',       // Nova categoria
+    'loja de roupas',         // Nova categoria
+    'loja de brinquedos',     // Nova categoria
+    'cafeteria vegana',       // Nova categoria
+    'empreendimentos sustentaveis', // Nova categoria
+    'loja de moveis',         // Nova categoria
+    'agencia de viagens',     // Nova categoria
+    'terapias alternativas',   // Nova categoria
+    'pousadas e hoteis'       // Nova categoria
 ];
+
 
 // Rota para criar um novo comércio
 app.post('/comercio', async (req, res) => {
