@@ -112,6 +112,8 @@ const HomeScreen = () => {
       <Text>Estado: {item.estado}</Text>
       <Text>Telefone: {item.telefone}</Text>
       <Text>Horário: {item.horario_funcionamento}</Text>
+      {/* Adicionando a descrição do comércio */}
+      <Text style={styles.comercioDescricao}>Descrição: {item.descricao}</Text> 
       <View style={styles.linksContainer}>
         {item.link_cardapio && (
           <Icon name="book" size={30} color="#000" onPress={() => abrirLink(item.link_cardapio)} />
@@ -158,7 +160,7 @@ const HomeScreen = () => {
           style={styles.pickerHalf}
           onValueChange={(itemValue) => setEstado(itemValue)}
         >
-          <Picker.Item label="Selecione o Estado" value="" />
+          <Picker.Item label="Estado" value="" />
           {estados.map((estado) => (
             <Picker.Item key={estado} label={estado} value={estado} />
           ))}
@@ -168,7 +170,7 @@ const HomeScreen = () => {
           style={styles.pickerHalf}
           onValueChange={(itemValue) => setCidade(itemValue)}
         >
-          <Picker.Item label="Selecione a Cidade" value="" />
+          <Picker.Item label="Cidade" value="" />
           {cidades.map((cidade) => (
             <Picker.Item key={cidade} label={cidade} value={cidade} />
           ))}
@@ -271,6 +273,7 @@ const CadastroScreen = () => {
           value={horarioFuncionamento}
           onChangeText={setHorarioFuncionamento}
         />
+        
         <TextInput
           style={styles.input}
           placeholder="Descrição"
@@ -428,6 +431,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+  },
+    comercioDescricao: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
   },
   footer: {
     textAlign: 'center',
