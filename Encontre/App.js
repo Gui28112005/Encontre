@@ -45,32 +45,38 @@ const HomeScreen = () => {
     const [loading, setLoading] = useState(true);
     const [favoritos, setFavoritos] = useState([]);
     const [avaliacoes, setAvaliacoes] = useState({});
-    const [modalVisible, setModalVisible] = useState(false);
-    const [isChecked, setIsChecked] = useState(false)
+    const [modalVisible, setModalVisible] = useState(false); // Inicializa como false
+    const [isChecked, setIsChecked] = useState(false);
+    const [isVerifiedModalVisible, setIsVerifiedModalVisible] = useState(false);
 
-useEffect(() => {
-  const verificarPrimeiroAcesso = async () => {
-    const aceitouPolitica = await AsyncStorage.getItem('aceitouPolitica');
-    if (!aceitouPolitica) {
-      setModalVisible(true);
-    }
-  };
+    
+      const handleVerifiedPress = () => {
+          setIsVerifiedModalVisible(true);
+      };
+  
 
-  verificarPrimeiroAcesso();
-}, []);
-
-const aceitarPolitica = async () => {
-  await AsyncStorage.setItem('aceitouPolitica', 'true');
-  setModalVisible(false);
-};
-
+    useEffect(() => {
+      const verificarPrimeiroAcesso = async () => {
+        const aceitouPolitica = await AsyncStorage.getItem('aceitouPolitica');
+        if (!aceitouPolitica) {
+          setModalVisible(true);
+        }
+      };
+  
+      verificarPrimeiroAcesso();
+    }, []);
+  
+    const aceitarPolitica = async () => {
+      await AsyncStorage.setItem('aceitouPolitica', 'true');
+      setModalVisible(false);
+    };
 
   
     useEffect(() => {
       const carregarComercios = async () => {
         setLoading(true);
         try {
-          const response = await fetch('https://backendecontre2.azurewebsites.net/comercio'); 
+          const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
           const data = await response.json();
           setComercios(data);
           setFilteredComercios(data);
@@ -86,14 +92,6 @@ const aceitarPolitica = async () => {
           setLoading(false);
         }
       };
-
-      const aceitarPolitica = () => {
-        if (isChecked) {
-            setModalVisible(false);
-        } else {
-            alert("Você precisa aceitar a política de privacidade.");
-        }
-    };
 
     <TouchableOpacity onPress={() => setModalVisible(true)}>
     <Text style={styles.openModalButton}>Abrir Política de Privacidade</Text>
@@ -149,7 +147,7 @@ const aceitarPolitica = async () => {
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
-          <Text style={styles.loadingText}>Seja Bem Vindo!</Text>
+          <Text style={styles.loadingText}>Seja Bem-Vindo!</Text>
           <Text style={styles.loadingText2}>Vamos encontar um lugar novo?</Text>
         </View>
       );
@@ -200,12 +198,14 @@ const aceitarPolitica = async () => {
     Linking.openURL(url).catch(err => console.error('Erro ao abrir o link', err));
 };
 
+
+
   const abrirMaps = (cidade) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${cidade}`;
     Linking.openURL(url).catch(err => console.error("Erro ao abrir Maps: ", err));
   };
 
-  const renderItem = (item) => {
+const renderItem = (item) => {
     const iconName = categoryIcons[item.categoria] || "help";
     const isFavorito = favoritos.includes(item);
     const notaAtual = avaliacoes[item.id] || 0;
@@ -217,13 +217,15 @@ const aceitarPolitica = async () => {
         );
     };
 
-    const handleIconPress = (link, iconName) => {
+    const handleLinkPress = (link, name) => {
         if (link) {
             abrirLink(link);
         } else {
-            Alert.alert(`${iconName} não disponível`, `Esse comércio não possui ${iconName}.`);
+            Alert.alert(`O comerciante optou por não ter essa rede social.`, `Não há um link disponível para ${name}.`);
         }
     };
+
+ 
 
     return (
         <View style={styles.comercioItem} key={item.id}>
@@ -234,45 +236,124 @@ const aceitarPolitica = async () => {
 
             <View style={styles.comercioHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon name={iconName} size={40} color="#1fb4ff" style={styles.icon} />
-                    <Text style={styles.comercioTitle}>{item.nome}</Text>
-                    <Icon 
-                        name="checkmark-circle" 
-                        size={30} 
-                        color="green" 
-                        onPress={handleVerifiedPress} 
-                        style={{ marginLeft: 10 }} 
-                    />
+                    <Icon name={iconName} size={40} color="#0056b3" style={styles.icon} />
+                             <Text style={styles.comercioTitle}>{item.nome}</Text>
+                             <Icon
+    name="checkmark-circle"
+    size={30}
+    color="green"
+    onPress={handleVerifiedPress} // Chama a função ao clicar
+    style={{ marginLeft: 10 }}
+/>
                 </View>
-            </View>
-            <Text style={styles.dataTexto}>
-                No encontre desde: {item.created_at ? new Date(item.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
-            </Text>
+  
+<Modal
+ transparent={true}
+visible={modalVisible}
+ >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Política de Privacidade</Text>
+                        <Text style={styles.modalText}>
+                            Ao continuar, você aceita nossa política de privacidade.
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.checkbox}
+                            onPress={() => setIsChecked(!isChecked)}
+                        >
+                            <View style={isChecked ? styles.checked : styles.unchecked}>
+                                {isChecked && <Text style={styles.checkmark}>✓</Text>}
+                            </View>
+                            <Text style={styles.checkboxLabel}>li a politica e estou ciente dos dados coletados</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={aceitarPolitica} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>aceito</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        </View>
+        <View style={styles.infoContainer}>
+    <Text style={styles.quemSomosTitulo}>
+        <Icon name="phone-portrait" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Contato
+    </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="business" size={18} color="black" /> Cidade: {item.cidade}
+    </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="map" size={18} color="black" /> Estado: {item.estado}
+    </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="call" size={18} color="black" /> Telefone: {item.telefone}
+    </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="alarm" size={18} color="black" /> Horário: {item.horario_funcionamento}
+    </Text>
+</View>
 
-            <View style={styles.infoContainer}>
-                <Text style={styles.quemSomosTitulo}>
-                    <Icon name="call" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Contato
-                </Text>
-                <Text style={styles.quemSomosTexto}>Cidade: {item.cidade}</Text>
-                <Text style={styles.quemSomosTexto}>Estado: {item.estado}</Text>
-                <Text style={styles.quemSomosTexto}>Telefone: {item.telefone}</Text>
-                <Text style={styles.quemSomosTexto}>Horário: {item.horario_funcionamento}</Text>
-            </View>
 
             <View style={styles.quemSomosContainer}>
-                <Text style={styles.quemSomosTitulo}>Bora Conhecer agente?</Text>
+            <Text style={styles.quemSomosTitulo}>
+                    <Icon name="chatbubbles" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Bora Conhecer agente?
+                </Text>
                 <Text style={styles.quemSomosTexto}>{item.descricao}</Text>
             </View>
-
-            <View style={styles.quemSomosContainer}>
-                <Text style={styles.quemSomosTitulo}>Conheça nossas redes sociais:</Text>
+            <Modal transparent={true} visible={modalVisible}>
+    <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Política de Privacidade</Text>
+            <Text style={styles.modalText}>
+                Para continuar, é necessário que você leia e esteja ciente:
+            </Text>
+            <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setIsChecked(!isChecked)}
+            >
+                <View style={isChecked ? styles.checked : styles.unchecked}>
+                    {isChecked && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>
+                    Confirmo que estou ciente dos dados que serão coletados e que revisei a política de privacidade.
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handlePress} style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>Leia nossa Política de Privacidade</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={aceitarPolitica} style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>Concordo com a Política de Privacidade</Text>
+            </TouchableOpacity>
+        </View>
+    </View>
+</Modal>
+<Modal
+    transparent={true}
+    visible={isVerifiedModalVisible}
+    animationType="slide"
+>
+    <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Comércio Verificado pela equipe Encontre</Text>
+            <Text style={styles.modalText}>
+                O que isso significa? Significa que esse comércio passou pelos testes de qualidade, 
+                assim verificado que fornece excelente atendimento aos clientes e funcionários. 
+                Nossa verificação é feita por testes de qualidade e opiniões de clientes.
+            </Text>
+            <TouchableOpacity onPress={() => setIsVerifiedModalVisible(false)} style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>Fechar</Text>
+            </TouchableOpacity>
+        </View>
+    </View>
+</Modal>    
+<View style={styles.quemSomosContainer}>
+<Text style={styles.quemSomosTitulo}>
+                    <Icon name="paper-plane" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Conheça nossas redes socias:                </Text>
                 <View style={styles.linksContainer}>
                     <View style={styles.iconContainer}>
                         <Icon 
                             name="book" 
                             size={30} 
                             color="#000" 
-                            onPress={() => handleIconPress(item.link_cardapio, 'Cardápio')} 
+                            onPress={() => handleLinkPress(item.link_cardapio, 'Cardápio')} 
                         />
                     </View>
                     <View style={styles.iconContainer}>
@@ -280,7 +361,7 @@ const aceitarPolitica = async () => {
                             name="logo-facebook" 
                             size={30} 
                             color="#3b5998" 
-                            onPress={() => handleIconPress(item.link_facebook, 'Facebook')} 
+                            onPress={() => handleLinkPress(item.link_facebook, 'Facebook')} 
                         />
                     </View>
                     <View style={styles.iconContainer}>
@@ -288,7 +369,7 @@ const aceitarPolitica = async () => {
                             name="logo-instagram" 
                             size={30} 
                             color="#e1306c" 
-                            onPress={() => handleIconPress(item.link_instagram, 'Instagram')} 
+                            onPress={() => handleLinkPress(item.link_instagram, 'Instagram')} 
                         />
                     </View>
                     <View style={styles.iconContainer}>
@@ -371,9 +452,16 @@ const aceitarPolitica = async () => {
           ))}
         </Picker>
       </View>
-      <TouchableOpacity onPress={filtrarComercios} style={styles.iconButton}>
-        <Icon name="filter" size={25} color="#0056b3" />
-      </TouchableOpacity>
+      <View style={{ alignItems: 'center', width: '100%',}}>
+    <TouchableOpacity 
+        onPress={filtrarComercios} 
+        style={styles.iconButton}
+    >
+        <Icon name="filter-circle" size={38} color="#0056b3" />
+    </TouchableOpacity>
+    <Text style={styles.filtrarTexto}>Filtrar</Text>
+</View>
+
       {filteredComercios.map(renderItem)}
       <Text style={styles.footer}></Text>
     </ScrollView>
@@ -402,7 +490,7 @@ const CadastroScreen = () => {
         Descrição: ${descricao}
       `.replace(/\n/g, '%0A');
   
-      const numeroWhatsApp = '5516'; // Altere para o número desejado
+      const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
       const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
       Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
     };
@@ -429,24 +517,31 @@ const CadastroScreen = () => {
           value={nome}
           onChangeText={setNome}
         />
-        <Picker
-          selectedValue={categoria}
-          style={styles.picker}
-          onValueChange={(itemValue) => setCategoria(itemValue)}
-        >
-          <Picker.Item label="Selecione a Categoria" value="" />
-          <Picker.Item label="Pizzaria" value="pizzaria" />
-          <Picker.Item label="Lanchonete" value="lanchonete" />
-          <Picker.Item label="Restaurante" value="restaurante" />
-          <Picker.Item label="Igreja" value="igreja" />
-          <Picker.Item label="Comércio" value="comercio" />
-          <Picker.Item label="Ponto Turístico" value="ponto turistico" />
-          <Picker.Item label="Sorveteria" value="sorveteria" />
-          <Picker.Item label="Açaiteria" value="açaiteria" />
-          <Picker.Item label="Shopping" value="shopping" />
-          <Picker.Item label="Evento" value="evento" />
-          <Picker.Item label="Cinema" value="cinema" />
-        </Picker>
+          <Picker
+        selectedValue={categoria}
+        style={styles.picker}
+        onValueChange={(itemValue) => setCategoria(itemValue)}
+      >
+        <Picker.Item label="Todas as Categorias" value="" />
+        <Picker.Item label="Pizzaria" value="pizzaria" />
+        <Picker.Item label="Lanchonete" value="lanchonete" />
+        <Picker.Item label="Restaurante" value="restaurante" />
+        <Picker.Item label="Igreja" value="igreja" />
+        <Picker.Item label="Comércio" value="comercio" />
+        <Picker.Item label="Ponto Turístico" value="ponto turistico" />
+        <Picker.Item label="Sorveteria" value="sorveteria" />
+        <Picker.Item label="Açaiteria" value="açaiteria" />
+        <Picker.Item label="Shopping" value="shopping" />
+        <Picker.Item label="Evento" value="evento" />
+        <Picker.Item label="Cinema" value="cinema" />
+        <Picker.Item label="Academia" value="academia" />
+        <Picker.Item label="Pet Shop" value="pet shop" /> 
+        <Picker.Item label="Cafeteria" value="cafeteria" /> 
+        <Picker.Item label="Bar" value="bar" /> 
+        <Picker.Item label="Livraria" value="livraria" /> 
+        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" /> 
+        <Picker.Item label="Centro Cultural" value="centro cultural" /> 
+      </Picker>
         <View style={styles.row}>
           <TextInput
             style={styles.inputHalf}
@@ -578,6 +673,7 @@ const CadastroScreen = () => {
         </ScrollView>
     );
 };
+  
 
 const App = () => {
   return (
@@ -674,7 +770,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     borderRadius: 20,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
     elevation: 5,
   },
@@ -717,7 +813,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   title: {
-    fontSize: 27,
+    fontSize: 21,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical:-15,
@@ -937,7 +1033,17 @@ checkboxLabel: {
   fontSize: 16, // Tamanho de fonte ajustado para melhor legibilidade
   color: '#333', // Cor mais escura
 },
-
+iconButton: {
+  justifyContent: 'center',  // Garante que o conteúdo esteja centrado
+  alignItems: 'center',      // Alinha itens no centro verticalmente
+  padding: 0,               // Adiciona um pouco de espaço ao redor
+},
+filtrarTexto: {
+  marginTop: 0,              // Espaçamento entre ícone e texto
+  fontSize: 18,              // Tamanho da fonte
+  color: '#0056b3',          // Cor do texto
+  textAlign: 'center',       // Centraliza o texto
+},
 
 });
 
