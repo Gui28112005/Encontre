@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encontre - Home</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="./js/script.js" defer></script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <nav class="menu">
+                <a href="./index.html">Home</a>
+                <a href="./sobre.html">Sobre</a>
+                <a href="./afiliado.html">Afiliado</a>
+                <a href="./privacidade.html">Privacidade</a>
+            </nav>
+            
+            <img src="./img/logoencontre.png" alt="Logo Encontre" class="logo" />
+            <h1 id="phraseOfTheDay"></h1>
+        
+            <div class="row" style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <select id="categoria" onchange="filtrarComercios()">
+                    <option value="">Todas as Categorias</option>
+                    <option value="pizzaria">Pizzaria</option>
+                    <option value="lanchonete">Lanchonete</option>
+                    <option value="restaurante">Restaurante</option>
+                    <option value="igreja">Igreja</option>
+                    <option value="comercio">Comércio</option>
+                    <option value="ponto turistico">Ponto Turístico</option>
+                    <option value="sorveteria">Sorveteria</option>
+                    <option value="açaiteria">Açaiteria</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="evento">Evento</option>
+                    <option value="cinema">Cinema</option>
+                    <option value="academia">Academia</option>
+                    <option value="pet shop">Pet Shop</option>
+                    <option value="cafeteria">Cafeteria</option>
+                    <option value="bar">Bar</option>
+                    <option value="livraria">Livraria</option>
+                    <option value="serviços de beleza">Serviços de Beleza</option>
+                    <option value="centro cultural">Centro Cultural</option>
+                </select>
+                <select id="estado" onchange="filtrarComercios()">
+                    <option value="">Selecione o Estado</option>
+                </select>
+                <select id="cidade" onchange="filtrarComercios()">
+                    <option value="">Selecione a Cidade</option>
+                </select>
+            </div>
+            
+            <button id="filterButton" onclick="filtrarComercios()">Filtrar</button>
+            
+            <div id="comerciosContainer"></div>
+        </header>
+    </div>
+</body>
+</html>
