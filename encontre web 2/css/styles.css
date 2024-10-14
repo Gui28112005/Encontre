@@ -86,7 +86,7 @@ html, body {
   align-items: center;
 }
 .comercio-image {
-  width: 130%;
+  width: 100%;
   height: 380px;
   margin-top: 10;
   object-fit: cover;
