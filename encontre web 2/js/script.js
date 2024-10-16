@@ -55,6 +55,26 @@ const setSelectOptions = (selectId, options, defaultText) => {
     }
 };
 
+// Função para aplicar os filtros
+const filtrarComercios = () => {
+    const selectedCategoria = document.getElementById('categoria').value;
+    const selectedEstado = document.getElementById('estado').value;
+    const selectedCidade = document.getElementById('cidade').value;
+
+    // Filtro aplicado a todos os comércios (não apenas os carregados até o momento)
+    filteredComercios = comercios.filter(comercio => {
+        return (selectedCategoria ? comercio.categoria === selectedCategoria : true) &&
+               (selectedEstado ? comercio.estado === selectedEstado : true) &&
+               (selectedCidade ? comercio.cidade === selectedCidade : true);
+    });
+
+    // Reinicie a exibição dos comércios filtrados
+    currentPage = 0;
+    const container = document.getElementById('comerciosContainer');
+    container.innerHTML = ''; // Limpa a exibição atual
+    exibirComercios(filteredComercios.slice(0, itemsPerPage)); // Exibe a primeira página dos comércios filtrados
+};
+
 const exibirComercios = (comerciosParaExibir) => {
     const container = document.getElementById('comerciosContainer');
     if (container) {
