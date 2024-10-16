@@ -1,10 +1,60 @@
+let comercios = [];
+let filteredComercios = [];
+let loading = true;
+
+const carregarComercios = async () => {
+    loading = true;
+    try {
+        const response = await fetch('https://backendecontre2.azurewebsites.net/comercio');
+        const data = await response.json();
+        comercios = data;
+        filteredComercios = data;
+
+        const cidadesUnicas = [...new Set(data.map(comercio => comercio.cidade))];
+        const estadosUnicos = [...new Set(data.map(comercio => comercio.estado))];
+
+        setSelectOptions('estado', estadosUnicos, 'Selecione o Estado');
+        setSelectOptions('cidade', cidadesUnicas, 'Selecione a Cidade');
+        
+        // Exibe parcialmente para melhorar a experiência de usuário
+        requestAnimationFrame(() => exibirComercios(filteredComercios));
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loading = false;
+    }
+};
+
+const setSelectOptions = (selectId, options, defaultText) => {
+    const select = document.getElementById(selectId);
+    if (select) {
+        let optionsHTML = `<option value="">${defaultText}</option>`;
+        options.forEach(option => {
+            optionsHTML += `<option value="${option}">${option}</option>`;
+        });
+        select.innerHTML = optionsHTML;
+    }
+};
+
+const filtrarComercios = () => {
+    const selectedCategoria = document.getElementById('categoria').value;
+    const selectedEstado = document.getElementById('estado').value;
+    const selectedCidade = document.getElementById('cidade').value;
+
+    filteredComercios = comercios.filter(comercio => {
+        return (selectedCategoria ? comercio.categoria === selectedCategoria : true) &&
+               (selectedEstado ? comercio.estado === selectedEstado : true) &&
+               (selectedCidade ? comercio.cidade === selectedCidade : true);
+    });
+
+    exibirComercios(filteredComercios);
+};
+
 const exibirComercios = (comerciosParaExibir) => {
     const container = document.getElementById('comerciosContainer');
     if (container) {
-        comerciosParaExibir.forEach(comercio => {
-            const comercioDiv = document.createElement('div');
-            comercioDiv.className = 'comercio-item';
-            comercioDiv.innerHTML = `
+        const comerciosHTML = comerciosParaExibir.map(comercio => `
+            <div class="comercio-item">
                 <img src="${comercio.imagem_capa || 'https://via.placeholder.com/300'}" alt="${comercio.nome}" class="comercio-image" />
                 <div class="comercio-header">
                     <h3>${comercio.nome}</h3>
@@ -21,7 +71,31 @@ const exibirComercios = (comerciosParaExibir) => {
                     <h2>Nossas Redes Sociais:</h2>
                     <div class="info-container">
                         <div class="links-container">
-                            ${renderSocialLinks(comercio)}
+                            <div class="icon-container">
+                                <a href="${comercio.link_cardapio || '#'}" target="_blank">
+                                    <img src="./img/icons8-cardápio-50.png" alt="Cardápio" class="icon" />
+                                </a>
+                            </div>
+                            <div class="icon-container">
+                                <a href="${comercio.link_facebook || '#'}" target="_blank">
+                                    <img src="./img/icons8-facebook-novo-50.png" alt="Facebook" class="icon" />
+                                </a>
+                            </div> 
+                            <div class="icon-container">
+                                <a href="${comercio.link_instagram || '#'}" target="_blank">
+                                    <img src="./img/icons8-instagram-48.png" alt="Instagram" class="icon" />
+                                </a>
+                            </div>
+                            <div class="icon-container">
+                                <a href="${comercio.telefone ? 'https://api.whatsapp.com/send?phone=' + comercio.telefone.replace(/\D/g, '') : '#'}" target="_blank">
+                                    <img src="./img/icons8-whatsapp-50.png" alt="WhatsApp" class="icon" />
+                                </a>
+                            </div>
+                            <div class="icon-container">
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comercio.cidade || 'localização não disponível')}" target="_blank">
+                                    <img src="./img/icons8-google-maps-novo-48.png" alt="Maps" class="icon" />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -29,24 +103,41 @@ const exibirComercios = (comerciosParaExibir) => {
                     <h2>Sobre Nós:</h2>
                     <p class="description">${comercio.descricao || 'Descrição não disponível'}</p>
                 </div>
-            `;
-            container.appendChild(comercioDiv);
-        });
+            </div>
+        `).join('');
+
+        container.innerHTML = comerciosHTML; // Insere todo o HTML de uma vez
     }
 };
 
-// Função para renderizar os links das redes sociais
-const renderSocialLinks = (comercio) => {
-    let linksHtml = '';
-    if (comercio.instagram) {
-        linksHtml += `<a href="${comercio.instagram}" target="_blank"><img src="instagram-icon.png" alt="Instagram" class="social-icon" /></a>`;
+window.onload = function() {
+    carregarComercios();
+    if (document.cookie.indexOf("cookies_accepted=true") === -1) {
+        setTimeout(function() {
+            const cookieConsent = document.getElementById('cookie-consent');
+            if (cookieConsent) {
+                cookieConsent.style.display = 'flex';
+            }
+        }, 1000);
+    } else {
+        const consentMessage = document.getElementById('consent-message');
+        if (consentMessage) {
+            consentMessage.style.display = 'block';
+        }
     }
-    if (comercio.facebook) {
-        linksHtml += `<a href="${comercio.facebook}" target="_blank"><img src="facebook-icon.png" alt="Facebook" class="social-icon" /></a>`;
-    }
-    if (comercio.website) {
-        linksHtml += `<a href="${comercio.website}" target="_blank"><img src="website-icon.png" alt="Website" class="social-icon" /></a>`;
-    }
-    // Adicione mais redes sociais conforme necessário
-    return linksHtml || '<p>Não disponível</p>';
 };
+
+function acceptCookies() {
+    var d = new Date();
+    d.setTime(d.getTime() + (30*24*60*60*1000)); // 30 dias
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = "cookies_accepted=true;" + expires + ";path=/";
+    const cookieConsent = document.getElementById('cookie-consent');
+    const consentMessage = document.getElementById('consent-message');
+    if (cookieConsent) {
+        cookieConsent.style.display = 'none';
+    }
+    if (consentMessage) {
+        consentMessage.style.display = 'block';
+    }
+}
