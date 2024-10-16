@@ -1,80 +1,3 @@
-let comercios = [];
-let filteredComercios = [];
-let loading = true;
-let currentPage = 0;
-const itemsPerPage = 10; // Número de itens por página
-
-const carregarComercios = async () => {
-    loading = true;
-    
-    // Tente pegar dados do cache primeiro
-    const cachedData = localStorage.getItem('comercios');
-    if (cachedData) {
-        comercios = JSON.parse(cachedData);
-        filteredComercios = comercios;
-        initializeFilters(); // Inicializa opções de estado e cidade
-        exibirComercios(filteredComercios.slice(0, itemsPerPage)); // Exibe primeira página
-        loading = false;
-    }
-
-    try {
-        const response = await fetch('https://backendecontre2.azurewebsites.net/comercio');
-        const data = await response.json();
-        comercios = data;
-        filteredComercios = data;
-
-        // Armazene dados no localStorage
-        localStorage.setItem('comercios', JSON.stringify(data));
-
-        initializeFilters(); // Inicializa opções de estado e cidade
-        exibirComercios(filteredComercios.slice(0, itemsPerPage)); // Exibe primeira página
-    } catch (error) {
-        console.error(error);
-    } finally {
-        loading = false;
-    }
-};
-
-const initializeFilters = () => {
-    const cidadesUnicas = [...new Set(comercios.map(comercio => comercio.cidade))];
-    const estadosUnicos = [...new Set(comercios.map(comercio => comercio.estado))];
-    setSelectOptions('estado', estadosUnicos, 'Selecione o Estado');
-    setSelectOptions('cidade', cidadesUnicas, 'Selecione a Cidade');
-};
-
-const setSelectOptions = (selectId, options, defaultText) => {
-    const select = document.getElementById(selectId);
-    if (select) {
-        select.innerHTML = `<option value="">${defaultText}</option>`; // Limpa opções anteriores
-        options.forEach(option => {
-            const opt = document.createElement('option');
-            opt.value = option;
-            opt.textContent = option;
-            select.appendChild(opt);
-        });
-    }
-};
-
-// Função para aplicar os filtros
-const filtrarComercios = () => {
-    const selectedCategoria = document.getElementById('categoria').value;
-    const selectedEstado = document.getElementById('estado').value;
-    const selectedCidade = document.getElementById('cidade').value;
-
-    // Filtro aplicado a todos os comércios (não apenas os carregados até o momento)
-    filteredComercios = comercios.filter(comercio => {
-        return (selectedCategoria ? comercio.categoria === selectedCategoria : true) &&
-               (selectedEstado ? comercio.estado === selectedEstado : true) &&
-               (selectedCidade ? comercio.cidade === selectedCidade : true);
-    });
-
-    // Reinicie a exibição dos comércios filtrados
-    currentPage = 0;
-    const container = document.getElementById('comerciosContainer');
-    container.innerHTML = ''; // Limpa a exibição atual
-    exibirComercios(filteredComercios.slice(0, itemsPerPage)); // Exibe a primeira página dos comércios filtrados
-};
-
 const exibirComercios = (comerciosParaExibir) => {
     const container = document.getElementById('comerciosContainer');
     if (container) {
@@ -98,7 +21,7 @@ const exibirComercios = (comerciosParaExibir) => {
                     <h2>Nossas Redes Sociais:</h2>
                     <div class="info-container">
                         <div class="links-container">
-                            <!-- Ícones de redes sociais aqui -->
+                            ${renderSocialLinks(comercio)}
                         </div>
                     </div>
                 </div>
@@ -112,21 +35,18 @@ const exibirComercios = (comerciosParaExibir) => {
     }
 };
 
-// Carrega mais comércios ao rolar a página
-window.addEventListener('scroll', () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !loading) {
-        carregarMaisComercios();
+// Função para renderizar os links das redes sociais
+const renderSocialLinks = (comercio) => {
+    let linksHtml = '';
+    if (comercio.instagram) {
+        linksHtml += `<a href="${comercio.instagram}" target="_blank"><img src="instagram-icon.png" alt="Instagram" class="social-icon" /></a>`;
     }
-});
-
-const carregarMaisComercios = () => {
-    if (filteredComercios.length > currentPage * itemsPerPage) {
-        currentPage++;
-        exibirComercios(filteredComercios.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage));
+    if (comercio.facebook) {
+        linksHtml += `<a href="${comercio.facebook}" target="_blank"><img src="facebook-icon.png" alt="Facebook" class="social-icon" /></a>`;
     }
-};
-
-window.onload = function() {
-    carregarComercios();
-    // Verificação de cookies (mantido)
+    if (comercio.website) {
+        linksHtml += `<a href="${comercio.website}" target="_blank"><img src="website-icon.png" alt="Website" class="social-icon" /></a>`;
+    }
+    // Adicione mais redes sociais conforme necessário
+    return linksHtml || '<p>Não disponível</p>';
 };
