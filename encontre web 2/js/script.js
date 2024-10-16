@@ -5,56 +5,51 @@ let loading = true;
 const carregarComercios = async () => {
     loading = true;
     try {
+        exibirLoader(true); // Exibir loader
+
         const response = await fetch('https://backendecontre2.azurewebsites.net/comercio');
         const data = await response.json();
+
+        // Processar dados
         comercios = data;
         filteredComercios = data;
 
+        // Preencher selects enquanto ainda carrega os dados
         const cidadesUnicas = [...new Set(data.map(comercio => comercio.cidade))];
         const estadosUnicos = [...new Set(data.map(comercio => comercio.estado))];
 
         setSelectOptions('estado', estadosUnicos, 'Selecione o Estado');
         setSelectOptions('cidade', cidadesUnicas, 'Selecione a Cidade');
         
-        // Exibe parcialmente para melhorar a experiência de usuário
-        requestAnimationFrame(() => exibirComercios(filteredComercios));
+        exibirComercios(filteredComercios);
+
     } catch (error) {
         console.error(error);
     } finally {
         loading = false;
+        exibirLoader(false); // Esconder loader
     }
 };
 
-const setSelectOptions = (selectId, options, defaultText) => {
-    const select = document.getElementById(selectId);
-    if (select) {
-        let optionsHTML = `<option value="">${defaultText}</option>`;
-        options.forEach(option => {
-            optionsHTML += `<option value="${option}">${option}</option>`;
-        });
-        select.innerHTML = optionsHTML;
+// Função para exibir um "loader"
+const exibirLoader = (estado) => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = estado ? 'block' : 'none';
     }
 };
 
-const filtrarComercios = () => {
-    const selectedCategoria = document.getElementById('categoria').value;
-    const selectedEstado = document.getElementById('estado').value;
-    const selectedCidade = document.getElementById('cidade').value;
-
-    filteredComercios = comercios.filter(comercio => {
-        return (selectedCategoria ? comercio.categoria === selectedCategoria : true) &&
-               (selectedEstado ? comercio.estado === selectedEstado : true) &&
-               (selectedCidade ? comercio.cidade === selectedCidade : true);
-    });
-
-    exibirComercios(filteredComercios);
-};
-
+// Modificar a função exibirComercios para usar DocumentFragment para melhorar a performance na adição ao DOM
 const exibirComercios = (comerciosParaExibir) => {
     const container = document.getElementById('comerciosContainer');
     if (container) {
-        const comerciosHTML = comerciosParaExibir.map(comercio => `
-            <div class="comercio-item">
+        container.innerHTML = ''; // Limpa o container
+        const fragment = document.createDocumentFragment();
+
+        comerciosParaExibir.forEach(comercio => {
+            const comercioDiv = document.createElement('div');
+            comercioDiv.className = 'comercio-item';
+            comercioDiv.innerHTML = `
                 <img src="${comercio.imagem_capa || 'https://via.placeholder.com/300'}" alt="${comercio.nome}" class="comercio-image" />
                 <div class="comercio-header">
                     <h3>${comercio.nome}</h3>
@@ -103,15 +98,19 @@ const exibirComercios = (comerciosParaExibir) => {
                     <h2>Sobre Nós:</h2>
                     <p class="description">${comercio.descricao || 'Descrição não disponível'}</p>
                 </div>
-            </div>
-        `).join('');
+            `;
+            fragment.appendChild(comercioDiv);
+        });
 
-        container.innerHTML = comerciosHTML; // Insere todo o HTML de uma vez
+        // Adicionar todos os elementos de uma vez ao DOM para melhorar a performance
+        container.appendChild(fragment);
     }
 };
 
+// Função chamada ao carregar a página
 window.onload = function() {
     carregarComercios();
+    // Verificação de cookies
     if (document.cookie.indexOf("cookies_accepted=true") === -1) {
         setTimeout(function() {
             const cookieConsent = document.getElementById('cookie-consent');
@@ -126,18 +125,3 @@ window.onload = function() {
         }
     }
 };
-
-function acceptCookies() {
-    var d = new Date();
-    d.setTime(d.getTime() + (30*24*60*60*1000)); // 30 dias
-    var expires = "expires=" + d.toUTCString();
-    document.cookie = "cookies_accepted=true;" + expires + ";path=/";
-    const cookieConsent = document.getElementById('cookie-consent');
-    const consentMessage = document.getElementById('consent-message');
-    if (cookieConsent) {
-        cookieConsent.style.display = 'none';
-    }
-    if (consentMessage) {
-        consentMessage.style.display = 'block';
-    }
-}
