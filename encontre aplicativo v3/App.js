@@ -48,6 +48,22 @@ const HomeScreen = () => {
     const [modalVisible, setModalVisible] = useState(false); // Inicializa como false
     const [isChecked, setIsChecked] = useState(false);
     const [isVerifiedModalVisible, setIsVerifiedModalVisible] = useState(false);
+    const [fraseAtual, setFraseAtual] = useState('');
+
+    useEffect(() => {
+      const alterarFrase = () => {
+        const fraseAleatoria = frasesCarregamento[Math.floor(Math.random() * frasesCarregamento.length)];
+        setFraseAtual(fraseAleatoria);
+      };
+    
+      // Altera a frase imediatamente e a cada 5 segundos
+      alterarFrase();
+      const intervalId = setInterval(alterarFrase, 3000);  // 5000 ms = 5 segundos
+    
+      return () => clearInterval(intervalId);  // Limpa o intervalo ao desmontar o componente
+    }, []);
+    
+
 
     
       const handleVerifiedPress = () => {
@@ -135,23 +151,16 @@ const HomeScreen = () => {
       setFilteredComercios(filtrados);
     };
 
+    const frasesCarregamento = [
+      "Aguarde enquanto carregamos...",
+      "Carregando os melhores locais...",
+      "Verifique sua conexão se demorar...",
+      "Quase lá...",
+      "Encontrando os lugares...",
+      "Preparando recomendações..."
+    ];
     
 
-    useEffect(() => {
-      const carregarAvaliacoes = async () => {
-          try {
-              const avaliacoesArmazenadas = await AsyncStorage.getItem('avaliacoes');
-              if (avaliacoesArmazenadas) {
-                  setAvaliacoes(JSON.parse(avaliacoesArmazenadas));
-              }
-          } catch (error) {
-              console.error("Erro ao carregar as avaliações: ", error);
-          }
-      };
-  
-      carregarAvaliacoes();
-  }, []);
-  
   
     // Renderiza o indicador de carregamento
     if (loading) {
@@ -162,7 +171,7 @@ const HomeScreen = () => {
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
           <Text style={styles.loadingText}>Seja Bem-Vindo!</Text>
-          <Text style={styles.loadingText2}>Vamos encontar um lugar novo?</Text>
+          <Text style={styles.loadingText2}>{fraseAtual}</Text>
         </View>
       );
     }
@@ -249,7 +258,7 @@ const HomeScreen = () => {
 
             <View style={styles.infoContainer}>
                 <Text style={styles.quemSomosTitulo}>
-                    <Icon name="phone-portrait" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Contato
+                    <Icon name="phone-portrait" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Contato:
                 </Text>
                 <Text style={styles.quemSomosTexto}>
                     <Icon name="business" size={18} color="black" /> Cidade: {item.cidade}
@@ -267,7 +276,7 @@ const HomeScreen = () => {
 
             <View style={styles.quemSomosContainer}>
                 <Text style={styles.quemSomosTitulo}>
-                    <Icon name="chatbubbles" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Bora Conhecer agente?
+                    <Icon name="chatbubbles" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Bora conhecer a gente?
                 </Text>
                 <Text style={styles.quemSomosTexto}>{item.descricao}</Text>
             </View>
@@ -478,7 +487,7 @@ const CadastroScreen = () => {
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
-          <Text style={styles.title}>Cadastre seu Negócio</Text>
+          <Text style={styles.title}>Cadastre seu Negócio!</Text>
         </View>
                      {/* Informações sobre os planos */}
       <View style={styles.plansContainer}>
@@ -559,6 +568,72 @@ const CadastroScreen = () => {
     );
   };
   
+
+  const AfiliadoScreen = () => {
+    const [nome, setNome] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [estado, setEstado] = useState('');
+    const [telefone, setTelefone] = useState('');
+
+    const enviarWhatsApp = () => {
+      const mensagem = `
+        Nome: ${nome}
+        Cidade: ${cidade}
+        Estado: ${estado}
+        Telefone: ${telefone}
+      `.replace(/\n/g, '%0A');
+  
+      const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
+      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
+      Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
+    };
+  
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+        <Image 
+      source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
+      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
+    />
+          <Text style={styles.title}>Mande uma mensagem para saber mais!</Text>
+      
+                   
+                 
+      </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Seu Nome"
+          value={nome}
+          onChangeText={setNome}
+        />
+ 
+        <View style={styles.row}>
+          <TextInput
+            style={styles.inputHalf}
+            placeholder="Cidade"
+            value={cidade}
+            onChangeText={setCidade}
+          />
+          <TextInput
+            style={styles.inputHalf}
+            placeholder="Estado"
+            value={estado}
+            onChangeText={setEstado}
+          />
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Telefone"
+          value={telefone}
+          onChangeText={setTelefone}
+        />
+        <TouchableOpacity onPress={enviarWhatsApp} style={styles.button}>
+          <Text style={styles.buttonText}>Quero saber mais!</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
   const PoliticaDePrivacidadeScreen = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -656,8 +731,9 @@ const App = () => {
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Lar">
         <Drawer.Screen name="Feed" component={HomeScreen} />
-        <Drawer.Screen name="Cadastre seu Negócio" component={CadastroScreen} />
-        <Drawer.Screen name="Política de Privacidade" component={PoliticaDePrivacidadeScreen} />
+        <Drawer.Screen name="Cadastre seu Negócios" component={CadastroScreen} />
+        <Drawer.Screen name="Política de Privacidade" component={PoliticaDePrivacidadeScreen} /> 
+        <Drawer.Screen name="Torne-se um Afiliado" component={AfiliadoScreen} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
