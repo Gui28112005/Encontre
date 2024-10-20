@@ -8,7 +8,7 @@ body {
 }
 header {
     background-color: #eef2f3;
-    color: #eef2f3;
+    color: #000000;
     padding: 20px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -19,28 +19,28 @@ header {
 }
 .translate-button {
     margin: 0 10px;
-    padding: 10px 15px;
-    background-color: #28a745;
+    padding: 10px 22px;
+    background-color: #000000;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 20px;
     cursor: pointer;
     transition: background-color 0.3s;
     font-size: 1rem;
 }
 .translate-button:hover {
-    background-color: #218838;
+    background-color: #4e4e4e;
 }
 .content {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
     background: white;
-    border-radius: 8px;
+    border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 h1, h2 {
-    color: #007bff;
+    color: #5e5e5e;
     margin-bottom: 10px;
 }
 /* Estilos do menu */
@@ -73,4 +73,11 @@ footer {
     color: #666;
     background-color: #f8f9fa;
     box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+}
+.team-image2 {
+    margin: 10px;
+    width: 200px; /* Ajuste o tamanho conforme necessário */
+    height: auto; /* Mantém a proporção da imagem */
+    border-radius: 80%; /* Faz a imagem ficar circular */
+    margin-bottom: 10px; /* Espaço entre a imagem e o texto */
 }
