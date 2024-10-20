@@ -139,6 +139,4 @@ const exibirComercios = (comerciosParaExibir) => {
         });
     }
 };
-
-
 window.onload = carregarComercios;
