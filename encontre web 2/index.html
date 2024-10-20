@@ -6,19 +6,8 @@
     <title>Encontre - Home</title>
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="icon" href="./img/logoencontre.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="./js/script.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1183660196592298"
-     crossorigin="anonymous"></script>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7M60FVYNEP"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-7M60FVYNEP');
-    </script>
 </head>
 <body>
     <div id="app">
@@ -54,6 +43,26 @@
                     <option value="livraria">Livraria</option>
                     <option value="serviços de beleza">Serviços de Beleza</option>
                     <option value="centro cultural">Centro Cultural</option>
+                    <option value="restaurante vegetariano">Restaurante Vegetariano</option>
+                    <option value="cervejaria">Cervejaria</option>
+                    <option value="atelie">Ateliê</option>
+                    <option value="salao de beleza">Salão de Beleza</option>
+                    <option value="farmacia">Farmácia</option>
+                    <option value="estudio de fotografia">Estúdio de Fotografia</option>
+                    <option value="casa de shows">Casa de Shows</option>
+                    <option value="escola de musica">Escola de Música</option>
+                    <option value="clinica de estetica">Clínica de Estética</option>
+                    <option value="estudio de yoga">Estúdio de Yoga</option>
+                    <option value="espaco coworking">Espaço Coworking</option>
+                    <option value="centro esportivo">Centro Esportivo</option>
+                    <option value="loja de roupas">Loja de Roupas</option>
+                    <option value="loja de brinquedos">Loja de Brinquedos</option>
+                    <option value="cafeteria vegana">Cafeteria Vegana</option>
+                    <option value="empreendimentos sustentaveis">Empreendimentos Sustentáveis</option>
+                    <option value="loja de moveis">Loja de Móveis</option>
+                    <option value="agencia de viagens">Agência de Viagens</option>
+                    <option value="terapias alternativas">Terapias Alternativas</option>
+                    <option value="pousadas e hoteis">Pousadas e Hotéis</option>
                 </select>
                 <select id="estado" onchange="filtrarComercios()">
                     <option value="">Selecione o Estado</option>
@@ -63,7 +72,10 @@
                 </select>
             </div>
             
-            <button id="filterButton" onclick="filtrarComercios()">Filtrar</button>
+            <button id="filterButton" onclick="filtrarComercios()">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+            
             
             <div id="comerciosContainer"></div>
         </header>
