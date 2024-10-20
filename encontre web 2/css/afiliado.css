@@ -32,7 +32,7 @@ h1 {
     transition: color 0.3s;
 }
 h1:hover {
-    color: #28a745;
+    color: #000000;
 }
 .description {
     font-size: 1.1em;
@@ -88,7 +88,7 @@ button:hover {
     transition: background-color 0.3s;
 }
 .menu a:hover {
-    background-color: #0056b3;
+    background-color: #000000;
 }
 .ganhos {
     margin: 20px 0;
