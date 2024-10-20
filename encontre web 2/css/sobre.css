@@ -8,6 +8,7 @@ body {
 .header {
     text-align: center;
     margin-bottom: 30px;
+    color: #000000;
 }
 
 .content {
@@ -73,4 +74,29 @@ p {
 
 .menu a:hover {
     background-color: #000000;
+}
+.team {
+    display: flex;
+    flex-direction: column; /* Ou row, dependendo do layout que você deseja */
+    align-items: center;
+}
+
+.team-member {
+    text-align: center; /* Centraliza o texto */
+    margin: 20px; /* Espaço entre os membros */
+}
+
+.team-image {
+    width: 180px; /* Ajuste o tamanho conforme necessário */
+    height: auto; /* Mantém a proporção da imagem */
+    border-radius: 80%; /* Faz a imagem ficar circular */
+    margin-bottom: 10px; /* Espaço entre a imagem e o texto */
+}
+.team-image2 {
+    margin: 30px;
+    width: 100px; /* Ajuste o tamanho conforme necessário */
+    height: auto; /* Mantém a proporção da imagem */
+    border-radius: 80%; /* Faz a imagem ficar circular */
+    margin-bottom: 10px; /* Espaço entre a imagem e o texto */
+    border: 2px solid gray; /* Adiciona uma borda preta de 2px */
 }
