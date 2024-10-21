@@ -79,7 +79,7 @@
     <script>
         // Carregar afiliados ao abrir a página
         window.onload = async () => {
-            const response = await fetch('http://localhost:8080/afiliados');
+            const response = await fetch('https://backendencontre01.azurewebsites.net/afiliados');
             const afiliados = await response.json();
             const selectAfiliado = document.getElementById('afiliado');
 
@@ -99,7 +99,7 @@
             console.log('Afiliado ID:', afiliadoId);
             console.log('Créditos a adicionar:', creditos);
 
-            const response = await fetch(`http://localhost:8080/afiliado/${afiliadoId}/creditos`, {
+            const response = await fetch(`https://backendencontre01.azurewebsites.net/afiliado/${afiliadoId}/creditos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
