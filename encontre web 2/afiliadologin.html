@@ -285,7 +285,7 @@ border-radius: 15px;
 
     async function carregarComercios() {
         try {
-            const response = await fetch(`http://localhost:8080/afiliado/${afiliadoId}/comercio`);
+            const response = await fetch(`https://backendencontre01.azurewebsites.net/afiliado/${afiliadoId}/comercio`);
             if (!response.ok) {
                 throw new Error('Erro na requisição');
             }
