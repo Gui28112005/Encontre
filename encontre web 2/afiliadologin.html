@@ -322,7 +322,7 @@ border-radius: 15px;
 
     async function deletarComercio(id) {
         if (confirm('Você tem certeza que deseja excluir este comércio?')) {
-            await fetch(`http://localhost:8080/comercio/${id}`, {
+            await fetch(`https://backendencontre01.azurewebsites.net/comercio/${id}`, {
                 method: 'DELETE'
             });
             alert('Comércio excluído com sucesso!');
