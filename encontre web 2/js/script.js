@@ -4,6 +4,7 @@ let loading = true;
 
 const carregarComercios = async () => {
     loading = true;
+    document.getElementById('loadingMessage').style.display = 'block'; // Mostra a mensagem de loading
     try {
         const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
         const data = await response.json();
@@ -24,8 +25,10 @@ const carregarComercios = async () => {
         console.error(error);
     } finally {
         loading = false;
+        document.getElementById('loadingMessage').style.display = 'none'; // Esconde a mensagem de loading
     }
 };
+
 
 const atualizarCidades = () => {
     const selectedEstado = document.getElementById('estado').value;
