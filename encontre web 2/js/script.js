@@ -13,13 +13,21 @@ const frasesLoading = [
     "Carregando... Estamos em busca de novidades para você!"
 ];
 
+let loadingInterval;
+
 const carregarComercios = async () => {
     loading = true;
     const loadingMessageElement = document.getElementById('loadingMessage');
-    
-    // Mostra uma mensagem de loading aleatória
-    loadingMessageElement.innerText = frasesLoading[Math.floor(Math.random() * frasesLoading.length)];
+
+    // Mostra a mensagem de loading
     loadingMessageElement.style.display = 'block';
+    let index = 0;
+
+    // Atualiza a mensagem a cada 4 segundos
+    loadingInterval = setInterval(() => {
+        loadingMessageElement.innerText = frasesLoading[index];
+        index = (index + 1) % frasesLoading.length; // Loop pelo array
+    }, 4000);
 
     try {
         const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
@@ -41,10 +49,10 @@ const carregarComercios = async () => {
         console.error(error);
     } finally {
         loading = false;
+        clearInterval(loadingInterval); // Limpa o intervalo
         loadingMessageElement.style.display = 'none'; // Esconde a mensagem de loading
     }
 };
-
 
 
 const atualizarCidades = () => {
