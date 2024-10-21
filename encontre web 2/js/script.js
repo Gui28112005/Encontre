@@ -2,9 +2,25 @@ let comercios = [];
 let filteredComercios = [];
 let loading = true;
 
+const frasesLoading = [
+    "Estamos buscando as melhores opções para você, por favor aguarde...",
+    "Carregando os dados, isso pode levar alguns segundos...",
+    "Um momento! Estamos preparando as informações para você...",
+    "Estamos quase lá! Só mais um instante...",
+    "Aguarde um pouco, estamos reunindo as melhores ofertas...",
+    "Estamos trabalhando para trazer os melhores locais, por favor, espere...",
+    "Preparando tudo para você! Isso não levará muito tempo...",
+    "Carregando... Estamos em busca de novidades para você!"
+];
+
 const carregarComercios = async () => {
     loading = true;
-    document.getElementById('loadingMessage').style.display = 'block'; // Mostra a mensagem de loading
+    const loadingMessageElement = document.getElementById('loadingMessage');
+    
+    // Mostra uma mensagem de loading aleatória
+    loadingMessageElement.innerText = frasesLoading[Math.floor(Math.random() * frasesLoading.length)];
+    loadingMessageElement.style.display = 'block';
+
     try {
         const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
         const data = await response.json();
@@ -25,9 +41,10 @@ const carregarComercios = async () => {
         console.error(error);
     } finally {
         loading = false;
-        document.getElementById('loadingMessage').style.display = 'none'; // Esconde a mensagem de loading
+        loadingMessageElement.style.display = 'none'; // Esconde a mensagem de loading
     }
 };
+
 
 
 const atualizarCidades = () => {
