@@ -17,7 +17,9 @@ import { Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const Drawer = createDrawerNavigator();
+
 
 // Função para obter a frase do dia
 const getPhraseOfTheDay = () => {
@@ -34,6 +36,7 @@ const getPhraseOfTheDay = () => {
   return phrases[dayOfWeek];
 };
 
+
 const HomeScreen = () => {
     const [comercios, setComercios] = useState([]);
     const [filteredComercios, setFilteredComercios] = useState([]);
@@ -48,12 +51,46 @@ const HomeScreen = () => {
     const [modalVisible, setModalVisible] = useState(false); // Inicializa como false
     const [isChecked, setIsChecked] = useState(false);
     const [isVerifiedModalVisible, setIsVerifiedModalVisible] = useState(false);
+    const [fraseAtual, setFraseAtual] = useState('');
 
+
+    useEffect(() => {
+      const alterarFrase = () => {
+        const fraseAleatoria = frasesCarregamento[Math.floor(Math.random() * frasesCarregamento.length)];
+        setFraseAtual(fraseAleatoria);
+      };
+   
+      // Altera a frase imediatamente e a cada 5 segundos
+      alterarFrase();
+      const intervalId = setInterval(alterarFrase, 3000);  // 5000 ms = 5 segundos
+   
+      return () => clearInterval(intervalId);  // Limpa o intervalo ao desmontar o componente
+    }, []);
+   
+
+
+    useEffect(() => {
+      if (estado) {
+        // Filtra cidades de acordo com o estado selecionado
+        const cidadesFiltradas = [...new Set(comercios.filter(comercio => comercio.estado === estado).map(comercio => comercio.cidade))];
+        setCidades(cidadesFiltradas);
+        setCidade(''); // Reseta a cidade selecionada ao mudar o estado
+      } else {
+        // Reseta para todas as cidades se nenhum estado estiver selecionado
+        setCidades([...new Set(comercios.map(comercio => comercio.cidade))]); 
+      }
+    }, [estado, comercios]);
     
+
+
+
+
+   
       const handleVerifiedPress = () => {
           setIsVerifiedModalVisible(true);
       };
-  
+ 
+
 
     useEffect(() => {
       const verificarPrimeiroAcesso = async () => {
@@ -62,42 +99,56 @@ const HomeScreen = () => {
           setModalVisible(true);
         }
       };
-  
+ 
       verificarPrimeiroAcesso();
     }, []);
-  
+ 
     const aceitarPolitica = async () => {
       await AsyncStorage.setItem('aceitouPolitica', 'true');
       setModalVisible(false);
     };
 
-  
+
+ 
     useEffect(() => {
       const carregarComercios = async () => {
         setLoading(true);
-        try {
-          const response = await fetch('https://backendencontre01.azurewebsites.net/comercio');
-          const data = await response.json();
-          setComercios(data);
-          setFilteredComercios(data);
-    
-          const cidadesUnicas = [...new Set(data.map(comercio => comercio.cidade))];
-          const estadosUnicos = [...new Set(data.map(comercio => comercio.estado))];
-          
-          setCidades(cidadesUnicas);
-          setEstados(estadosUnicos);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setLoading(false);
+        const backends = [
+          'https://backendencontre01.azurewebsites.net/comercio',
+          'https://backendecontre2.azurewebsites.net/comercio',
+          'https://backendencontre3.azurewebsites.net/comercio',
+          'https://encontrebackend4.azurewebsites.nets/comercio'
+        ];
+   
+        for (const backend of backends) {
+          try {
+            const response = await fetch(backend);
+            if (!response.ok) {
+              continue;
+            }
+            const data = await response.json();
+            setComercios(data);
+            setFilteredComercios(data);
+   
+            const cidadesUnicas = [...new Set(data.map(comercio => comercio.cidade))];
+            const estadosUnicos = [...new Set(data.map(comercio => comercio.estado))];
+   
+            setCidades(cidadesUnicas);
+            setEstados(estadosUnicos);
+            break;
+          } catch {
+           
+          }
         }
+        setLoading(false);
       };
-
+   
     <TouchableOpacity onPress={() => setModalVisible(true)}>
     <Text style={styles.openModalButton}>Abrir Política de Privacidade</Text>
 </TouchableOpacity>
 
-  
+
+ 
       const carregarFavoritos = async () => {
         try {
           const favoritosArmazenados = await AsyncStorage.getItem('favoritos');
@@ -108,11 +159,11 @@ const HomeScreen = () => {
           console.error(error);
         }
       };
-  
+ 
       carregarComercios();
       carregarFavoritos();
     }, []);
-  
+ 
     const filtrarComercios = () => {
       const filtrados = comercios.filter(comercio => {
         const cidadeMatch = cidade ? comercio.cidade === cidade : true;
@@ -123,35 +174,33 @@ const HomeScreen = () => {
       setFilteredComercios(filtrados);
     };
 
-    useEffect(() => {
-      const carregarAvaliacoes = async () => {
-          try {
-              const avaliacoesArmazenadas = await AsyncStorage.getItem('avaliacoes');
-              if (avaliacoesArmazenadas) {
-                  setAvaliacoes(JSON.parse(avaliacoesArmazenadas));
-              }
-          } catch (error) {
-              console.error("Erro ao carregar as avaliações: ", error);
-          }
-      };
-  
-      carregarAvaliacoes();
-  }, []);
-  
-  
+
+    const frasesCarregamento = [
+      "Aguarde enquanto carregamos...",
+      "Carregando os melhores locais...",
+      "Verifique sua conexão se demorar...",
+      "Quase lá...",
+      "Encontrando os lugares...",
+      "Preparando recomendações..."
+    ];
+   
+
+
+ 
     // Renderiza o indicador de carregamento
     if (loading) {
       return (
         <View style={styles.loadingContainer}>
-                <Image 
+                <Image
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
           <Text style={styles.loadingText}>Seja Bem-Vindo!</Text>
-          <Text style={styles.loadingText2}>Vamos encontar um lugar novo?</Text>
+          <Text style={styles.loadingText2}>{fraseAtual}</Text>
         </View>
       );
     }
+
 
   const abrirLink = (url) => {
     if (url) {
@@ -160,6 +209,7 @@ const HomeScreen = () => {
       console.warn("URL não está definida");
     }
   };
+
 
   const categoryIcons = {
     pizzaria: "pizza",
@@ -187,16 +237,19 @@ const HomeScreen = () => {
     "centro cultural": "home",        // Ícone para centro cultural
 };
 
+
   const abrirWhatsApp = (telefone) => {
     const url = `https://api.whatsapp.com/send?phone=${telefone}`;
     Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
   };
 
+
   const handlePress = () => {
     // URL que você deseja abrir
-    const url = 'https://politicadeprivacidadeencontre.vercel.app/politicadeprivacidadeencontre.html'; 
+    const url = 'https://politicadeprivacidadeencontre.vercel.app/politicadeprivacidadeencontre.html';
     Linking.openURL(url).catch(err => console.error('Erro ao abrir o link', err));
 };
+
 
 
 
@@ -205,27 +258,19 @@ const HomeScreen = () => {
     Linking.openURL(url).catch(err => console.error("Erro ao abrir Maps: ", err));
   };
 
-const renderItem = (item) => {
+
+  const renderItem = (item) => {
     const iconName = categoryIcons[item.categoria] || "help";
     const isFavorito = favoritos.includes(item);
     const notaAtual = avaliacoes[item.id] || 0;
-
-    const handleVerifiedPress = () => {
-        Alert.alert(
-            "Comércio Verificado pela equipe Encontre!",
-            "O que isso significa? Significa que esse comércio passou pelos testes de qualidade, assim verificado que fornece excelente atendimento aos clientes e funcionários. Nossa verificação é feita por testes de qualidade e opiniões de clientes."
-        );
-    };
 
     const handleLinkPress = (link, name) => {
         if (link) {
             abrirLink(link);
         } else {
-            Alert.alert(`O comerciante optou por não ter essa rede social.`, `Não há um link disponível para ${name}.`);
+            Alert.alert("O comerciante optou por não ter essa rede social.", `Não há um link disponível para ${name}.`);
         }
     };
-
- 
 
     return (
         <View style={styles.comercioItem} key={item.id}>
@@ -235,47 +280,17 @@ const renderItem = (item) => {
             />
 
             <View style={styles.comercioHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                     <Icon name={iconName} size={40} color="#0056b3" style={styles.icon} />
-                             <Text style={styles.comercioTitle}>{item.nome}</Text>
-                             <Icon
-    name="checkmark-circle"
-    size={30}
-    color="green"
-    onPress={handleVerifiedPress} // Chama a função ao clicar
-    style={{ marginLeft: 10 }}
-/>
+                    <Text style={[styles.comercioTitle, { flexShrink: 1, maxWidth: '80%' }]} numberOfLines={2}>
+                        {item.nome}
+                    </Text>
                 </View>
-  
-<Modal
- transparent={true}
-visible={modalVisible}
- >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Política de Privacidade</Text>
-                        <Text style={styles.modalText}>
-                            Ao continuar, você aceita nossa política de privacidade.
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.checkbox}
-                            onPress={() => setIsChecked(!isChecked)}
-                        >
-                            <View style={isChecked ? styles.checked : styles.unchecked}>
-                                {isChecked && <Text style={styles.checkmark}>✓</Text>}
-                            </View>
-                            <Text style={styles.checkboxLabel}>li a politica e estou ciente dos dados coletados</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={aceitarPolitica} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>aceito</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        </View>
-        <View style={styles.infoContainer}>
+            </View>
+
+            <View style={styles.infoContainer}>
     <Text style={styles.quemSomosTitulo}>
-        <Icon name="phone-portrait" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Contato
+        <Icon name="phone-portrait" size={27} color="gray" style={{ transform: [{ rotate: '90deg' }] }} /> Contato:
     </Text>
     <Text style={styles.quemSomosTexto}>
         <Icon name="business" size={18} color="black" /> Cidade: {item.cidade}
@@ -289,107 +304,129 @@ visible={modalVisible}
     <Text style={styles.quemSomosTexto}>
         <Icon name="alarm" size={18} color="black" /> Horário: {item.horario_funcionamento}
     </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="calendar" size={18} color="black" /> Horário em Feriados: {item.horario_funcionamento_feriados || 'Não especificado'}
+    </Text>
+    <Text style={styles.quemSomosTexto}>
+        <Icon name="location" size={18} color="black" /> Endereço: {item.endereco || 'Não especificado'}
+    </Text>
 </View>
 
 
             <View style={styles.quemSomosContainer}>
-            <Text style={styles.quemSomosTitulo}>
-                    <Icon name="chatbubbles" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Bora Conhecer agente?
+                <Text style={styles.quemSomosTitulo}>
+                    <Icon name="chatbubbles" size={27} color="green" style={{ transform: [{ rotate: '90deg' }] }} /> Bora conhecer a gente?
                 </Text>
                 <Text style={styles.quemSomosTexto}>{item.descricao}</Text>
             </View>
+
+
             <Modal transparent={true} visible={modalVisible}>
-    <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Política de Privacidade</Text>
-            <Text style={styles.modalText}>
-                Para continuar, é necessário que você leia e esteja ciente:
-            </Text>
-            <TouchableOpacity
-                style={styles.checkbox}
-                onPress={() => setIsChecked(!isChecked)}
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Política de Privacidade</Text>
+                        <Text style={styles.modalText}>
+                            Para continuar, é necessário que você leia e esteja ciente:
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.checkbox}
+                            onPress={() => setIsChecked(!isChecked)}
+                        >
+                            <View style={isChecked ? styles.checked : styles.unchecked}>
+                                {isChecked && <Text style={styles.checkmark}>✓</Text>}
+                            </View>
+                            <Text style={styles.checkboxLabel}>
+                                Confirmo que estou ciente dos dados que serão coletados e que revisei a política de privacidade.
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handlePress} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Leia nossa Política de Privacidade</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={aceitarPolitica} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Concordo com a Política de Privacidade</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+
+            <Modal
+                transparent={true}
+                visible={isVerifiedModalVisible}
+                animationType="slide"
             >
-                <View style={isChecked ? styles.checked : styles.unchecked}>
-                    {isChecked && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={styles.checkboxLabel}>
-                    Confirmo que estou ciente dos dados que serão coletados e que revisei a política de privacidade.
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handlePress} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Leia nossa Política de Privacidade</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={aceitarPolitica} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Concordo com a Política de Privacidade</Text>
-            </TouchableOpacity>
-        </View>
-    </View>
-</Modal>
-<Modal
-    transparent={true}
-    visible={isVerifiedModalVisible}
-    animationType="slide"
->
-    <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Comércio Verificado pela equipe Encontre</Text>
-            <Text style={styles.modalText}>
-                O que isso significa? Significa que esse comércio passou pelos testes de qualidade, 
-                assim verificado que fornece excelente atendimento aos clientes e funcionários. 
-                Nossa verificação é feita por testes de qualidade e opiniões de clientes.
-            </Text>
-            <TouchableOpacity onPress={() => setIsVerifiedModalVisible(false)} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Fechar</Text>
-            </TouchableOpacity>
-        </View>
-    </View>
-</Modal>    
-<View style={styles.quemSomosContainer}>
-<Text style={styles.quemSomosTitulo}>
-                    <Icon name="paper-plane" size={18} color="black" style={{ transform: [{ rotate: '90deg' }] }} /> Conheça nossas redes socias:                </Text>
-                <View style={styles.linksContainer}>
-                    <View style={styles.iconContainer}>
-                        <Icon 
-                            name="book" 
-                            size={30} 
-                            color="#000" 
-                            onPress={() => handleLinkPress(item.link_cardapio, 'Cardápio')} 
-                        />
-                    </View>
-                    <View style={styles.iconContainer}>
-                        <Icon 
-                            name="logo-facebook" 
-                            size={30} 
-                            color="#3b5998" 
-                            onPress={() => handleLinkPress(item.link_facebook, 'Facebook')} 
-                        />
-                    </View>
-                    <View style={styles.iconContainer}>
-                        <Icon 
-                            name="logo-instagram" 
-                            size={30} 
-                            color="#e1306c" 
-                            onPress={() => handleLinkPress(item.link_instagram, 'Instagram')} 
-                        />
-                    </View>
-                    <View style={styles.iconContainer}>
-                        <Icon 
-                            name="logo-whatsapp" 
-                            size={30} 
-                            color="#25D366" 
-                            onPress={() => abrirWhatsApp(item.telefone)} 
-                        />
-                    </View>
-                    <View style={styles.iconContainer}>
-                        <Icon 
-                            name="map" 
-                            size={30} 
-                            color="green" 
-                            onPress={() => abrirMaps(item.cidade)} 
-                        />
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Comércio Verificado pela equipe Encontre</Text>
+                        <Text style={styles.modalText}>
+                            O que isso significa? Significa que esse comércio passou pelos testes de qualidade,
+                            assim verificado que fornece excelente atendimento aos clientes e funcionários.
+                            Nossa verificação é feita por testes de qualidade e opiniões de clientes.
+                        </Text>
+                        <TouchableOpacity onPress={() => setIsVerifiedModalVisible(false)} style={styles.modalButton}>
+                            <Text style={styles.modalButtonText}>Fechar</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </Modal>
+
+
+            <View style={styles.quemSomosContainer}>
+    <Text style={styles.quemSomosTitulo}>
+        <Icon name="paper-plane" size={27} color="blue" style={{ transform: [{ rotate: '90deg' }] }} /> Conheça nossas redes sociais:
+    </Text>
+    <View style={styles.linksContainer}>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="clipboard-outline"
+                size={30}
+                color="#763c05"
+                onPress={() => handleLinkPress(item.link_cardapio, 'Cardápio')}
+            />
+        </View>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="logo-facebook"
+                size={30}
+                color="#3b5998"
+                onPress={() => handleLinkPress(item.link_facebook, 'Facebook')}
+            />
+        </View>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="logo-instagram"
+                size={30}
+                color="#e1306c"
+                onPress={() => handleLinkPress(item.link_instagram, 'Instagram')}
+            />
+        </View>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="logo-whatsapp"
+                size={30}
+                color="#25D366"
+                onPress={() => abrirWhatsApp(item.telefone)}
+            />
+        </View>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="map-outline"
+                size={30}
+                color="green"
+                onPress={() => abrirMaps(item.cidade)}
+            />
+        </View>
+        <View style={styles.iconContainer}>
+            <Icon
+                name="logo-chrome" // Ícone para o site pessoal
+                size={30}
+                color="#4285F4" // Cor do Google Chrome
+                onPress={() => handleLinkPress(item.link_site_pessoal, 'Site Pessoal')} // Chama a função para abrir o site
+            />
+        </View>
+    </View>
+</View>
+
         </View>
     );
 };
@@ -398,11 +435,11 @@ visible={modalVisible}
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-      <Image 
+      <Image
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
-    
+   
         <Text style={styles.title}>{getPhraseOfTheDay()}</Text>
       </View>
       <Picker
@@ -423,38 +460,39 @@ visible={modalVisible}
         <Picker.Item label="Evento" value="evento" />
         <Picker.Item label="Cinema" value="cinema" />
         <Picker.Item label="Academia" value="academia" />
-        <Picker.Item label="Pet Shop" value="pet shop" /> 
-        <Picker.Item label="Cafeteria" value="cafeteria" /> 
-        <Picker.Item label="Bar" value="bar" /> 
-        <Picker.Item label="Livraria" value="livraria" /> 
-        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" /> 
-        <Picker.Item label="Centro Cultural" value="centro cultural" /> 
+        <Picker.Item label="Pet Shop" value="pet shop" />
+        <Picker.Item label="Cafeteria" value="cafeteria" />
+        <Picker.Item label="Bar" value="bar" />
+        <Picker.Item label="Livraria" value="livraria" />
+        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" />
+        <Picker.Item label="Centro Cultural" value="centro cultural" />
       </Picker>
       <View style={styles.row}>
-        <Picker
-          selectedValue={estado}
-          style={styles.pickerHalf}
-          onValueChange={(itemValue) => setEstado(itemValue)}
-        >
-          <Picker.Item label="Estado" value="" />
-          {estados.map((estado) => (
-            <Picker.Item key={estado} label={estado} value={estado} />
-          ))}
-        </Picker>
-        <Picker
-          selectedValue={cidade}
-          style={styles.pickerHalf}
-          onValueChange={(itemValue) => setCidade(itemValue)}
-        >
-          <Picker.Item label="Cidade" value="" />
-          {cidades.map((cidade) => (
-            <Picker.Item key={cidade} label={cidade} value={cidade} />
-          ))}
-        </Picker>
+      <Picker
+  selectedValue={estado}
+  style={styles.pickerHalf}
+  onValueChange={(itemValue) => setEstado(itemValue)}
+>
+  <Picker.Item label="Estado" value="" />
+  {estados.map((estado) => (
+    <Picker.Item key={estado} label={estado} value={estado} />
+  ))}
+</Picker>
+
+<Picker
+  selectedValue={cidade}
+  style={styles.pickerHalf}
+  onValueChange={(itemValue) => setCidade(itemValue)}
+>
+  <Picker.Item label="Cidade" value="" />
+  {cidades.map((cidade) => (
+    <Picker.Item key={cidade} label={cidade} value={cidade} />
+  ))}
+</Picker>
       </View>
       <View style={{ alignItems: 'center', width: '100%',}}>
-    <TouchableOpacity 
-        onPress={filtrarComercios} 
+    <TouchableOpacity
+        onPress={filtrarComercios}
         style={styles.iconButton}
     >
         <Icon name="filter-circle" size={38} color="#0056b3" />
@@ -462,11 +500,13 @@ visible={modalVisible}
     <Text style={styles.filtrarTexto}>Filtrar</Text>
 </View>
 
+
       {filteredComercios.map(renderItem)}
       <Text style={styles.footer}></Text>
     </ScrollView>
   );
 };
+
 
 const CadastroScreen = () => {
     const [nome, setNome] = useState('');
@@ -478,7 +518,9 @@ const CadastroScreen = () => {
     const [descricao, setDescricao] = useState('');
 
 
-  
+
+
+ 
     const enviarWhatsApp = () => {
       const mensagem = `
         Nome: ${nome}
@@ -489,20 +531,20 @@ const CadastroScreen = () => {
         Horário: ${horarioFuncionamento}
         Descrição: ${descricao}
       `.replace(/\n/g, '%0A');
-  
+ 
       const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
       const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
       Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
     };
-  
+ 
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-        <Image 
+        <Image
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
       style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
     />
-          <Text style={styles.title}>Cadastre seu Negócio</Text>
+          <Text style={styles.title}>Cadastre seu Negócio!</Text>
         </View>
                      {/* Informações sobre os planos */}
       <View style={styles.plansContainer}>
@@ -535,12 +577,12 @@ const CadastroScreen = () => {
         <Picker.Item label="Evento" value="evento" />
         <Picker.Item label="Cinema" value="cinema" />
         <Picker.Item label="Academia" value="academia" />
-        <Picker.Item label="Pet Shop" value="pet shop" /> 
-        <Picker.Item label="Cafeteria" value="cafeteria" /> 
-        <Picker.Item label="Bar" value="bar" /> 
-        <Picker.Item label="Livraria" value="livraria" /> 
-        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" /> 
-        <Picker.Item label="Centro Cultural" value="centro cultural" /> 
+        <Picker.Item label="Pet Shop" value="pet shop" />
+        <Picker.Item label="Cafeteria" value="cafeteria" />
+        <Picker.Item label="Bar" value="bar" />
+        <Picker.Item label="Livraria" value="livraria" />
+        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" />
+        <Picker.Item label="Centro Cultural" value="centro cultural" />
       </Picker>
         <View style={styles.row}>
           <TextInput
@@ -570,6 +612,8 @@ const CadastroScreen = () => {
         />
 
 
+
+
         <TextInput
           style={styles.input}
           placeholder="Descrição"
@@ -582,28 +626,99 @@ const CadastroScreen = () => {
       </ScrollView>
     );
   };
-  
+ 
+
+
+  const AfiliadoScreen = () => {
+    const [nome, setNome] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [estado, setEstado] = useState('');
+    const [telefone, setTelefone] = useState('');
+
+
+    const enviarWhatsApp = () => {
+      const mensagem = `
+        Nome: ${nome}
+        Cidade: ${cidade}
+        Estado: ${estado}
+        Telefone: ${telefone}
+      `.replace(/\n/g, '%0A');
+ 
+      const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
+      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
+      Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
+    };
+ 
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+        <Image
+      source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
+      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
+    />
+          <Text style={styles.title}>Mande uma mensagem para saber mais!</Text>
+     
+                   
+                 
+      </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Seu Nome"
+          value={nome}
+          onChangeText={setNome}
+        />
+ 
+        <View style={styles.row}>
+          <TextInput
+            style={styles.inputHalf}
+            placeholder="Cidade"
+            value={cidade}
+            onChangeText={setCidade}
+          />
+          <TextInput
+            style={styles.inputHalf}
+            placeholder="Estado"
+            value={estado}
+            onChangeText={setEstado}
+          />
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Telefone"
+          value={telefone}
+          onChangeText={setTelefone}
+        />
+        <TouchableOpacity onPress={enviarWhatsApp} style={styles.button}>
+          <Text style={styles.buttonText}>Quero saber mais!</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
+
   const PoliticaDePrivacidadeScreen = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.imageContainer}>
-                <Image 
+                <Image
                     source={require('./assets/logoencontre.png')}
                     style={{ width: 150, height: 250 }}
                 />
             </View>
             <Text style={styles.title2}>Política de Privacidade</Text>
 
+
             <Text style={styles.sectionTitle}>1. INFORMAÇÕES GERAIS</Text>
             <Text style={styles.text}>
-                Esta Política de Privacidade descreve como o aplicativo 
+                Esta Política de Privacidade descreve como o aplicativo
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 coleta, utiliza e protege as informações pessoais de usuários e comerciantes, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei 13.709/18), o Regulamento Geral sobre a Proteção de Dados da União Europeia (GDPR) e outras legislações relevantes dos Estados Unidos, como a Lei de Proteção da Privacidade do Consumidor da Califórnia (CCPA).
             </Text>
 
+
             <Text style={styles.sectionTitle}>2. DADOS COLETADOS</Text>
             <Text style={styles.text}>
-                Os comerciantes que se cadastram no 
+                Os comerciantes que se cadastram no
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 precisam fornecer as seguintes informações:
             </Text>
@@ -614,37 +729,43 @@ const CadastroScreen = () => {
             <Text style={styles.text}>- Links das redes sociais</Text>
             <Text style={styles.text}>- Descrição detalhada do comércio, incluindo produtos e serviços oferecidos</Text>
 
+
             <Text style={styles.text}>
                 Esses dados são utilizados exclusivamente para facilitar a comunicação e a negociação entre comerciantes e usuários, sendo enviados diretamente para o WhatsApp. Não armazenamos essas informações em nossos servidores.
             </Text>
 
+
             <Text style={styles.sectionTitle}>3. VALIDAÇÃO DO COMÉRCIO</Text>
             <Text style={styles.text}>
-                A equipe do 
+                A equipe do
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 realiza uma verificação cuidadosa para garantir que os comerciantes atendam aos nossos critérios de qualidade e confiabilidade. Este processo pode envolver feedback de clientes e, em alguns casos, visitas pessoais ao local.
             </Text>
 
+
             <Text style={styles.sectionTitle}>4. POLÍTICA DE PAGAMENTO</Text>
             <Text style={styles.text}>
-                Atualmente, o aplicativo não realiza processamento de pagamentos. No caso de não pagamento, o comércio será removido dos canais utilizados pelo 
+                Atualmente, o aplicativo não realiza processamento de pagamentos. No caso de não pagamento, o comércio será removido dos canais utilizados pelo
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 para promover seus serviços. Essa medida visa manter a qualidade e a transparência na plataforma.
             </Text>
 
+
             <Text style={styles.sectionTitle}>5. CONTEÚDO E FAIXA ETÁRIA</Text>
             <Text style={styles.text}>
-                O 
+                O
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 proíbe estritamente a publicação de conteúdo impróprio. O aplicativo é destinado a usuários com idade mínima de 17 anos, assegurando um ambiente seguro e adequado para todos.
             </Text>
 
+
             <Text style={styles.sectionTitle}>6. CONSENTIMENTO</Text>
             <Text style={styles.text}>
-                Ao utilizar o aplicativo 
+                Ao utilizar o aplicativo
                 <Text style={{ fontWeight: 'bold' }}> Encontre </Text>
                 o usuário consente com a coleta e o uso das informações de acordo com esta Política de Privacidade. Recomendamos que os usuários revisem esta política periodicamente para se manterem informados sobre quaisquer alterações.
             </Text>
+
 
             <Text style={styles.sectionTitle}>7. DIREITOS DOS USUÁRIOS</Text>
             <Text style={styles.text}>
@@ -656,15 +777,18 @@ const CadastroScreen = () => {
             <Text style={styles.text}>- Receber informações claras sobre o uso de seus dados;</Text>
             <Text style={styles.text}>- Retirar o consentimento a qualquer momento.</Text>
 
+
             <Text style={styles.sectionTitle}>8. ALTERAÇÕES NA POLÍTICA DE PRIVACIDADE</Text>
             <Text style={styles.text}>
                 Reservamos o direito de modificar esta Política de Privacidade a qualquer momento. As alterações serão comunicadas por meio do aplicativo e recomendamos que tanto usuários quanto comerciantes revisem esta seção regularmente.
             </Text>
 
+
             <Text style={styles.sectionTitle}>9. CONTATO</Text>
             <Text style={styles.text}>
                 Se você tiver dúvidas ou solicitações relacionadas a esta política, entre em contato conosco pelo e-mail: guilhermedevsistemas@gmail.com.
             </Text>
+
 
             <Text style={styles.sectionTitle}>10. JURISDIÇÃO PARA RESOLUÇÃO DE CONFLITOS</Text>
             <Text style={styles.text}>
@@ -673,19 +797,22 @@ const CadastroScreen = () => {
         </ScrollView>
     );
 };
-  
+ 
+
 
 const App = () => {
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Lar">
-        <Drawer.Screen name="Encontre Feed" component={HomeScreen} />
-        <Drawer.Screen name="Cadastre seu Negócio" component={CadastroScreen} />
+        <Drawer.Screen name="Feed" component={HomeScreen} />
+        <Drawer.Screen name="Cadastre seu Negócios" component={CadastroScreen} />
         <Drawer.Screen name="Política de Privacidade" component={PoliticaDePrivacidadeScreen} />
+        <Drawer.Screen name="Torne-se um Afiliado" component={AfiliadoScreen} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -752,7 +879,7 @@ const styles = StyleSheet.create({
     color: '#333', // Cor do texto
     marginTop: 5, // Espaçamento entre o ícone e o rótulo
   },
-  
+ 
   infoContainer: {
     marginTop: 10,
     padding: 10,
@@ -770,7 +897,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     borderRadius: 20,
-    borderColor: '#ccc',
+    borderColor: 'black',
     borderWidth: 1,
     elevation: 5,
   },
@@ -919,7 +1046,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
     backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    borderRadius: 15,
     borderColor: '#ccc',
     borderWidth: 1,
   },
@@ -930,13 +1057,10 @@ const styles = StyleSheet.create({
   },
   quemSomosTexto: {
     fontSize: 18,
+    margin:3,
     color: '#333',
   },
-  quemSomosTexto: {
-    fontSize: 16, // Ajuste o tamanho conforme necessário
-    color: '#333',
-  },
-  
+ 
   icon: {
     marginRight: 10, // Espaçamento entre o ícone e o título
 },
@@ -951,10 +1075,12 @@ linksContainer: {
   marginVertical: 20, // Margem vertical, se necessário
 },
 
+
 iconContainer: {
   alignItems: 'center', // Centraliza ícones e rótulos
   marginHorizontal: 10, // Espaço horizontal entre os ícones
 },
+
 
 iconLabel: {
   fontSize: 14, // Tamanho do texto para o rótulo
@@ -973,7 +1099,7 @@ modalContent: {
   backgroundColor: '#fff', // Usei a notação hexadecimal para clareza
   borderRadius: 15, // Bordas mais arredondadas
   shadowColor: '#000', // Sombra para destaque
-  shadowOffset: { width: 0, height: 2 }, 
+  shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.3,
   shadowRadius: 4,
   elevation: 5, // Para Android
@@ -1026,25 +1152,25 @@ unchecked: {
 },
 checkmark: {
   color: '#fff',
-  fontSize: 18, // Aumentei o tamanho do checkmark
+  fontSize: 18,
 },
 checkboxLabel: {
-  marginLeft: 12, // Aumentei o espaço à esquerda
-  fontSize: 16, // Tamanho de fonte ajustado para melhor legibilidade
-  color: '#333', // Cor mais escura
+  marginLeft: 12,
+  fontSize: 16,
+  color: '#333',
 },
 iconButton: {
-  justifyContent: 'center',  // Garante que o conteúdo esteja centrado
-  alignItems: 'center',      // Alinha itens no centro verticalmente
-  padding: 0,               // Adiciona um pouco de espaço ao redor
+  justifyContent: 'center',  
+  alignItems: 'center',      
+  padding: 0,              
 },
 filtrarTexto: {
-  marginTop: 0,              // Espaçamento entre ícone e texto
-  fontSize: 18,              // Tamanho da fonte
-  color: '#0056b3',          // Cor do texto
-  textAlign: 'center',       // Centraliza o texto
+  marginTop: 0,              
+  fontSize: 18,              
+  color: '#0056b3',          
+  textAlign: 'center',    
 },
-
+  
 });
-
 export default App;
+
