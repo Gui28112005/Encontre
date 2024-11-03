@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
+
 const Drawer = createDrawerNavigator();
 
 
@@ -81,16 +82,9 @@ const HomeScreen = () => {
       }
     }, [estado, comercios]);
     
-
-
-
-
-   
       const handleVerifiedPress = () => {
           setIsVerifiedModalVisible(true);
       };
- 
-
 
     useEffect(() => {
       const verificarPrimeiroAcesso = async () => {
@@ -141,6 +135,7 @@ const HomeScreen = () => {
           }
         }
         setLoading(false);
+
       };
    
     <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -187,19 +182,21 @@ const HomeScreen = () => {
 
 
  
-    // Renderiza o indicador de carregamento
-    if (loading) {
-      return (
-        <View style={styles.loadingContainer}>
-                <Image
-      source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
-      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
-    />
-          <Text style={styles.loadingText}>Seja Bem-Vindo!</Text>
-          <Text style={styles.loadingText2}>{fraseAtual}</Text>
-        </View>
-      );
-    }
+// Renderiza o indicador de carregamento
+if (loading) {
+  return (
+    <View style={styles.loadingContainer}>
+      <Image
+        source={require('./assets/logoencontre.png')}
+        style={{ width: 150, height: 250, marginVertical: -50 }}
+      />
+      <Text style={styles.loadingText}>Seja Bem-Vindo!</Text>
+      <Text style={styles.loadingText2}>{fraseAtual}</Text>
+
+
+    </View>
+  );
+}
 
 
   const abrirLink = (url) => {
@@ -250,14 +247,41 @@ const HomeScreen = () => {
     Linking.openURL(url).catch(err => console.error('Erro ao abrir o link', err));
 };
 
+const handleLinkPress = (link, name, comercio_id) => {
+  if (link) {
+      registrarClique(comercio_id, link); // Registra o clique
+      abrirLink(link); // Abre o link
+  } else {
+      Alert.alert("O comerciante optou por não ter essa rede social.", `Não há um link disponível para ${name}.`);
+  }
+};
 
+// Função para registrar o clique no backend
+const registrarClique = async (comercio_id, link) => {
+  try {
+      const response = await fetch('https://backendencontre01.azurewebsites.net/clique', { // Altere para o URL do seu backend
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              comercio_id,
+              link,
+          }),
+      });
 
+      if (!response.ok) {
+          throw new Error('Erro ao registrar o clique');
+      }
+  } catch (error) {
+      console.error('Erro ao registrar clique:', error);
+  }
+};
 
-  const abrirMaps = (cidade) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${cidade}`;
-    Linking.openURL(url).catch(err => console.error("Erro ao abrir Maps: ", err));
-  };
-
+const abrirMaps = (endereco) => {
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+  Linking.openURL(url).catch(err => console.error("Erro ao abrir Maps: ", err));
+};
 
   const renderItem = (item) => {
     const iconName = categoryIcons[item.categoria] || "help";
@@ -273,46 +297,57 @@ const HomeScreen = () => {
     };
 
     return (
-        <View style={styles.comercioItem} key={item.id}>
+      <View style={styles.comercioItem} key={item.id}>
+        <View style={styles.comercioHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+            <View style={styles.iconContainer1}>
+              <Icon name={iconName} size={28} color="#0056b3" />
+            </View>
+          
+              <Text style={[styles.comercioTitle, { flexShrink: 1, maxWidth: '80%' }]} numberOfLines={2}>
+                {item.nome}
+              </Text>
+          </View>
+        </View>
+
             <Image
                 source={{ uri: item.imagem_capa || 'default-image.jpg' }}
                 style={styles.image}
             />
 
-            <View style={styles.comercioHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <Icon name={iconName} size={40} color="#0056b3" style={styles.icon} />
-                    <Text style={[styles.comercioTitle, { flexShrink: 1, maxWidth: '80%' }]} numberOfLines={2}>
-                        {item.nome}
-                    </Text>
+            {/* Seção de Categoria Principal */}
+            <View style={styles.categoriasContainer}>
+                <Text style={styles.categoriasTitulo}>Categoria:</Text>
+                <View style={styles.categoriaItem}>
+                    <Icon name={categoryIcons[item.categoria]} size={20} color="#000" />
+                    <Text style={styles.categoriaTexto}>{item.categoria}</Text>
                 </View>
             </View>
-
-            <View style={styles.infoContainer}>
-    <Text style={styles.quemSomosTitulo}>
-        <Icon name="phone-portrait" size={27} color="gray" style={{ transform: [{ rotate: '90deg' }] }} /> Contato:
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="business" size={18} color="black" /> Cidade: {item.cidade}
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="map" size={18} color="black" /> Estado: {item.estado}
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="call" size={18} color="black" /> Telefone: {item.telefone}
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="alarm" size={18} color="black" /> Horário: {item.horario_funcionamento}
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="calendar" size={18} color="black" /> Horário em Feriados: {item.horario_funcionamento_feriados || 'Não especificado'}
-    </Text>
-    <Text style={styles.quemSomosTexto}>
-        <Icon name="location" size={18} color="black" /> Endereço: {item.endereco || 'Não especificado'}
+            <View style={styles.horarioContainer}>
+    <Icon name="calendar" size={30} color="#af6060" />
+    <Text style={styles.horarioTexto}>
+      Horário de Funcionamento: {item.horario_funcionamento_feriados || 'Não especificado'}
     </Text>
 </View>
-
-
+            <View style={styles.infoContainer}>
+                <Text style={styles.quemSomosTitulo}>
+                    <Icon name="people-circle-outline" size={30} color="gray" style={{ transform: [{ rotate: '90deg' }] }} /> Contato:
+                </Text>
+                <Text style={styles.quemSomosTexto}>
+                    <Icon name="business" size={18} color="black" /> Cidade: {item.cidade}
+                </Text>
+                <Text style={styles.quemSomosTexto}>
+                    <Icon name="map" size={18} color="black" /> Estado: {item.estado}
+                </Text>
+                <Text style={styles.quemSomosTexto}>
+                    <Icon name="call" size={18} color="black" /> Telefone: {item.telefone} 
+                </Text>
+              
+                <Text style={styles.quemSomosTexto}>
+                    <Icon name="location" size={18} color="black" /> Endereço: {item.endereco || 'Não especificado'}
+                </Text>
+            </View>
+ 
             <View style={styles.quemSomosContainer}>
                 <Text style={styles.quemSomosTitulo}>
                     <Icon name="chatbubbles" size={27} color="green" style={{ transform: [{ rotate: '90deg' }] }} /> Bora conhecer a gente?
@@ -320,7 +355,8 @@ const HomeScreen = () => {
                 <Text style={styles.quemSomosTexto}>{item.descricao}</Text>
             </View>
 
-
+            
+            {/* Modal para Política de Privacidade */}
             <Modal transparent={true} visible={modalVisible}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
@@ -349,7 +385,7 @@ const HomeScreen = () => {
                 </View>
             </Modal>
 
-
+            {/* Modal para Comércio Verificado */}
             <Modal
                 transparent={true}
                 visible={isVerifiedModalVisible}
@@ -370,63 +406,79 @@ const HomeScreen = () => {
                 </View>
             </Modal>
 
-
             <View style={styles.quemSomosContainer}>
-    <Text style={styles.quemSomosTitulo}>
-        <Icon name="paper-plane" size={27} color="blue" style={{ transform: [{ rotate: '90deg' }] }} /> Conheça nossas redes sociais:
-    </Text>
-    <View style={styles.linksContainer}>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="clipboard-outline"
-                size={30}
-                color="#763c05"
-                onPress={() => handleLinkPress(item.link_cardapio, 'Cardápio')}
-            />
-        </View>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="logo-facebook"
-                size={30}
-                color="#3b5998"
-                onPress={() => handleLinkPress(item.link_facebook, 'Facebook')}
-            />
-        </View>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="logo-instagram"
-                size={30}
-                color="#e1306c"
-                onPress={() => handleLinkPress(item.link_instagram, 'Instagram')}
-            />
-        </View>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="logo-whatsapp"
-                size={30}
-                color="#25D366"
-                onPress={() => abrirWhatsApp(item.telefone)}
-            />
-        </View>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="map-outline"
-                size={30}
-                color="green"
-                onPress={() => abrirMaps(item.cidade)}
-            />
-        </View>
-        <View style={styles.iconContainer}>
-            <Icon
-                name="logo-chrome" // Ícone para o site pessoal
-                size={30}
-                color="#4285F4" // Cor do Google Chrome
-                onPress={() => handleLinkPress(item.link_site_pessoal, 'Site Pessoal')} // Chama a função para abrir o site
-            />
-        </View>
-    </View>
-</View>
-
+                <Text style={styles.quemSomosTitulo}>
+                    <Icon name="earth-outline" size={27} color="blue" style={{ transform: [{ rotate: '90deg' }] }} /> Redes sociais:
+                </Text>
+                <View style={styles.linksContainer}>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="reader-outline"
+                            size={30}
+                            color="#763c05"
+                            onPress={() => {
+                                handleLinkPress(item.link_cardapio, 'Cardápio', item.id);
+                                registrarClique(item.id, item.link_cardapio);
+                            }}
+                        />
+                    </View>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="logo-facebook"
+                            size={30}
+                            color="#3b5998"
+                            onPress={() => {
+                                handleLinkPress(item.link_facebook, 'Facebook', item.id);
+                                registrarClique(item.id, item.link_facebook);
+                            }}
+                        />
+                    </View>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="logo-instagram"
+                            size={30}
+                            color="#e1306c"
+                            onPress={() => {
+                                handleLinkPress(item.link_instagram, 'Instagram', item.id);
+                                registrarClique(item.id, item.link_instagram);
+                            }}
+                        />
+                    </View>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="logo-whatsapp"
+                            size={30}
+                            color="#25D366"
+                            onPress={() => {
+                                registrarClique(item.id, 'WhatsApp');
+                                abrirWhatsApp(item.telefone);
+                            }}
+                        />
+                    </View>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="location-outline"
+                            size={30}
+                            color="green"
+                            onPress={() => {
+                                registrarClique(item.id, 'Maps');
+                                abrirMaps(item.endereco);
+                            }}
+                        />
+                    </View>
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name="cart-outline"
+                            size={35}
+                            color="#4285F4"
+                            onPress={() => {
+                                handleLinkPress(item.link_site_pessoal, 'Site Pessoal', item.id);
+                                registrarClique(item.id, item.link_site_pessoal);
+                            }}
+                        />
+                    </View>
+                </View>
+            </View>
         </View>
     );
 };
@@ -437,10 +489,10 @@ const HomeScreen = () => {
       <View style={styles.header}>
       <Image
       source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
-      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
+      style={{ width: 120, height: 230, marginVertical:-40, }} // Ajuste o tamanho conforme necessário
     />
    
-        <Text style={styles.title}>{getPhraseOfTheDay()}</Text>
+        <Text style={styles.title3}>{getPhraseOfTheDay()}</Text>
       </View>
       <Picker
         selectedValue={categoria}
@@ -448,24 +500,43 @@ const HomeScreen = () => {
         onValueChange={(itemValue) => setCategoria(itemValue)}
       >
         <Picker.Item label="Todas as Categorias" value="" />
-        <Picker.Item label="Pizzaria" value="pizzaria" />
-        <Picker.Item label="Lanchonete" value="lanchonete" />
-        <Picker.Item label="Restaurante" value="restaurante" />
-        <Picker.Item label="Igreja" value="igreja" />
-        <Picker.Item label="Comércio" value="comercio" />
-        <Picker.Item label="Ponto Turístico" value="ponto turistico" />
-        <Picker.Item label="Sorveteria" value="sorveteria" />
         <Picker.Item label="Açaiteria" value="açaiteria" />
-        <Picker.Item label="Shopping" value="shopping" />
-        <Picker.Item label="Evento" value="evento" />
-        <Picker.Item label="Cinema" value="cinema" />
-        <Picker.Item label="Academia" value="academia" />
-        <Picker.Item label="Pet Shop" value="pet shop" />
-        <Picker.Item label="Cafeteria" value="cafeteria" />
-        <Picker.Item label="Bar" value="bar" />
-        <Picker.Item label="Livraria" value="livraria" />
-        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" />
-        <Picker.Item label="Centro Cultural" value="centro cultural" />
+<Picker.Item label="Academia" value="academia" />
+<Picker.Item label="Agência de Viagens" value="agencia de viagens" />
+<Picker.Item label="Ateliê" value="atelie" />
+<Picker.Item label="Bar" value="bar" />
+<Picker.Item label="Cafeteria" value="cafeteria" />
+<Picker.Item label="Cafeteria Vegana" value="cafeteria vegana" />
+<Picker.Item label="Casa de Shows" value="casa de shows" />
+<Picker.Item label="Centro Esportivo" value="centro esportivo" />
+<Picker.Item label="Cervejaria" value="cervejaria" />
+<Picker.Item label="Cinemas" value="cinema" />
+<Picker.Item label="Clínica de Estética" value="clinica de estetica" />
+<Picker.Item label="Comércio" value="comercio" />
+<Picker.Item label="Evento" value="evento" />
+<Picker.Item label="Espaço Coworking" value="espaco coworking" />
+<Picker.Item label="Escola de Música" value="escola de musica" />
+<Picker.Item label="Estúdio de Fotografia" value="estudio de fotografia" />
+<Picker.Item label="Estúdio de Yoga" value="estudio de yoga" />
+<Picker.Item label="Empreendimentos Sustentáveis" value="empreendimentos sustentaveis" />
+<Picker.Item label="Farmácia" value="farmacia" />
+<Picker.Item label="Igreja" value="igreja" />
+<Picker.Item label="Lanchonete" value="lanchonete" />
+<Picker.Item label="Livraria" value="livraria" />
+<Picker.Item label="Loja de Brinquedos" value="loja de brinquedos" />
+<Picker.Item label="Loja de Móveis" value="loja de moveis" />
+<Picker.Item label="Loja de Roupas" value="loja de roupas" />
+<Picker.Item label="Pet Shop" value="pet shop" />
+<Picker.Item label="Pizzaria" value="pizzaria" />
+<Picker.Item label="Ponto Turístico" value="ponto turistico" />
+<Picker.Item label="Pousadas e Hotéis" value="pousadas e hoteis" />
+<Picker.Item label="Restaurante" value="restaurante" />
+<Picker.Item label="Restaurante Vegetariano" value="restaurante vegetariano" />
+<Picker.Item label="Salão de Beleza" value="salao de beleza" />
+<Picker.Item label="Serviços de Beleza" value="serviços de beleza" />
+<Picker.Item label="Shopping" value="shopping" />
+<Picker.Item label="Sorveteria" value="sorveteria" />
+<Picker.Item label="Terapias Alternativas" value="terapias alternativas" />
       </Picker>
       <View style={styles.row}>
       <Picker
@@ -490,7 +561,7 @@ const HomeScreen = () => {
   ))}
 </Picker>
       </View>
-      <View style={{ alignItems: 'center', width: '100%',}}>
+      <View style={{ alignItems: 'center', width: '100%' }}>
     <TouchableOpacity
         onPress={filtrarComercios}
         style={styles.iconButton}
@@ -500,200 +571,87 @@ const HomeScreen = () => {
     <Text style={styles.filtrarTexto}>Filtrar</Text>
 </View>
 
+{filteredComercios.length === 0 ? (
+    <View style={styles.noResultsContainer}>
+        <Text style={styles.noResultsText}>
+            Estamos buscando comércios para esta categoria. Volte mais tarde!
+        </Text>
+    </View>
+) : (
+    filteredComercios.map(renderItem)
+)}
+
 
       {filteredComercios.map(renderItem)}
-      <Text style={styles.footer}></Text>
+      <View style={styles.footer2}>
+        <Text style={styles.footerText}>Encontre by GeoConecta ®</Text>
+      </View>
     </ScrollView>
   );
 };
 
+const colaboradores = [
+  {
+    nome: 'Guilherme Lopes Rocetom',
+    cargo: 'Co-Fundador Encontre e GeoConecta',
+    imagem: require('./assets/IMG_20240614_190940_745.webp'),
+  },
+  {
+    nome: 'Hiasmin Lorrane Cardoso',
+    cargo: 'Co-Fundadora Encontre e GeoConecta',
+    imagem: require('./assets/Screenshot_20241020-155001.png'),
+  },
+];
 
-const CadastroScreen = () => {
-    const [nome, setNome] = useState('');
-    const [categoria, setCategoria] = useState('');
-    const [cidade, setCidade] = useState('');
-    const [estado, setEstado] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [horarioFuncionamento, setHorarioFuncionamento] = useState('');
-    const [descricao, setDescricao] = useState('');
-
-
-
-
- 
-    const enviarWhatsApp = () => {
-      const mensagem = `
-        Nome: ${nome}
-        Categoria: ${categoria}
-        Cidade: ${cidade}
-        Estado: ${estado}
-        Telefone: ${telefone}
-        Horário: ${horarioFuncionamento}
-        Descrição: ${descricao}
-      `.replace(/\n/g, '%0A');
- 
-      const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
-      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
-      Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
-    };
- 
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
+const SobreScreen = () => {
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
         <Image
-      source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
-      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
-    />
-          <Text style={styles.title}>Cadastre seu Negócio!</Text>
-        </View>
-                     {/* Informações sobre os planos */}
-      <View style={styles.plansContainer}>
-        <Text style={styles.plansTitle}>Planos Disponíveis:</Text>
-        <Text style={styles.planItem}>• Plano para comercios: R$ 35,00</Text>
-        <Text style={styles.planItem}>• Plano Empresarial: R$ 120,00</Text>
-        <Text style={styles.footerText}>Ao enviar seu comércio, iremos verificar o pagamento e, em seguida, publicá-lo para toda a nossa comunidade.</Text>
+          source={require('./assets/logoencontre.png')}
+          style={styles.logo}
+        />
       </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome do Comércio"
-          value={nome}
-          onChangeText={setNome}
-        />
-          <Picker
-        selectedValue={categoria}
-        style={styles.picker}
-        onValueChange={(itemValue) => setCategoria(itemValue)}
-      >
-        <Picker.Item label="Todas as Categorias" value="" />
-        <Picker.Item label="Pizzaria" value="pizzaria" />
-        <Picker.Item label="Lanchonete" value="lanchonete" />
-        <Picker.Item label="Restaurante" value="restaurante" />
-        <Picker.Item label="Igreja" value="igreja" />
-        <Picker.Item label="Comércio" value="comercio" />
-        <Picker.Item label="Ponto Turístico" value="ponto turistico" />
-        <Picker.Item label="Sorveteria" value="sorveteria" />
-        <Picker.Item label="Açaiteria" value="açaiteria" />
-        <Picker.Item label="Shopping" value="shopping" />
-        <Picker.Item label="Evento" value="evento" />
-        <Picker.Item label="Cinema" value="cinema" />
-        <Picker.Item label="Academia" value="academia" />
-        <Picker.Item label="Pet Shop" value="pet shop" />
-        <Picker.Item label="Cafeteria" value="cafeteria" />
-        <Picker.Item label="Bar" value="bar" />
-        <Picker.Item label="Livraria" value="livraria" />
-        <Picker.Item label="Serviços de Beleza" value="serviços de beleza" />
-        <Picker.Item label="Centro Cultural" value="centro cultural" />
-      </Picker>
-        <View style={styles.row}>
-          <TextInput
-            style={styles.inputHalf}
-            placeholder="Cidade"
-            value={cidade}
-            onChangeText={setCidade}
-          />
-          <TextInput
-            style={styles.inputHalf}
-            placeholder="Estado"
-            value={estado}
-            onChangeText={setEstado}
-          />
-        </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Telefone"
-          value={telefone}
-          onChangeText={setTelefone}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Horário de Funcionamento"
-          value={horarioFuncionamento}
-          onChangeText={setHorarioFuncionamento}
-        />
 
-
-
-
-        <TextInput
-          style={styles.input}
-          placeholder="Descrição"
-          value={descricao}
-          onChangeText={setDescricao}
-        />
-        <TouchableOpacity onPress={enviarWhatsApp} style={styles.button}>
-          <Text style={styles.buttonText}>Enviar via WhatsApp 📞</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  };
- 
-
-
-  const AfiliadoScreen = () => {
-    const [nome, setNome] = useState('');
-    const [cidade, setCidade] = useState('');
-    const [estado, setEstado] = useState('');
-    const [telefone, setTelefone] = useState('');
-
-
-    const enviarWhatsApp = () => {
-      const mensagem = `
-        Nome: ${nome}
-        Cidade: ${cidade}
-        Estado: ${estado}
-        Telefone: ${telefone}
-      `.replace(/\n/g, '%0A');
- 
-      const numeroWhatsApp = '5516994392545'; // Altere para o número desejado
-      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
-      Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
-    };
- 
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-        <Image
-      source={require('./assets/logoencontre.png')} // Substitua pelo caminho da sua imagem
-      style={{ width: 150, height: 250, marginVertical:-50, }} // Ajuste o tamanho conforme necessário
-    />
-          <Text style={styles.title}>Mande uma mensagem para saber mais!</Text>
-     
-                   
-                 
+      <View style={styles.aboutContainer}>
+        <Text style={styles.title}>Encontre</Text>
+        <Text style={styles.description}>
+        Fundada em 2024 na cidade de São Carlos, SP, a Encontre nasceu da proposta de ajudar as pessoas a descobrir novos lugares, tanto na sua cidade quanto em outras. Nossa plataforma organiza esses locais por categorias, facilitando a busca por novidades e experiências únicas. 
+        </Text>
+        
+        <Text style={styles.aboutTitle}>Equipe Encontre:</Text>
+        {colaboradores.map((colaborador, index) => (
+          <View key={index} style={styles.colaborador}>
+            <Image source={colaborador.imagem} style={styles.colaboradorImage} />
+            <View style={styles.colaboradorInfo}>
+              <Text style={styles.colaboradorNome}>{colaborador.nome}</Text>
+              <Text style={styles.colaboradorCargo}>{colaborador.cargo}</Text>
+            </View>
+          </View>
+          
+        ))}
       </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Seu Nome"
-          value={nome}
-          onChangeText={setNome}
-        />
- 
-        <View style={styles.row}>
-          <TextInput
-            style={styles.inputHalf}
-            placeholder="Cidade"
-            value={cidade}
-            onChangeText={setCidade}
-          />
-          <TextInput
-            style={styles.inputHalf}
-            placeholder="Estado"
-            value={estado}
-            onChangeText={setEstado}
-          />
+      <View style={styles.socialContainer}>
+          <Text style={styles.socialTitle}>Redes Socias</Text>
+          <View style={styles.socialIcons}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://wa.me/16994392545')}>
+              <Icon name="logo-whatsapp" size={30} color="#25D366" style={styles.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Linking.openURL('https://www.instagram.com/encontreapp_1')}>
+              <Icon name="logo-instagram" size={30} color="#E1306C" style={styles.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Linking.openURL('https://encontresite.vercel.app/')}>
+              <Icon name="globe" size={30} color="#007BFF" style={styles.icon} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Telefone"
-          value={telefone}
-          onChangeText={setTelefone}
-        />
-        <TouchableOpacity onPress={enviarWhatsApp} style={styles.button}>
-          <Text style={styles.buttonText}>Quero saber mais!</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  };
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Encontre by GeoConecta ®</Text>
+      </View>
+    </ScrollView>
+  );
+};
+
 
 
   const PoliticaDePrivacidadeScreen = () => {
@@ -794,6 +752,9 @@ const CadastroScreen = () => {
             <Text style={styles.text}>
                 Para resolver quaisquer controvérsias decorrentes desta Política de Privacidade, aplicaremos integralmente a legislação brasileira, o GDPR para usuários da UE e a CCPA para usuários da Califórnia. Os litígios deverão ser apresentados no foro da comarca onde se localiza a sede da empresa.
             </Text>
+            <View style={styles.footer}>
+        <Text style={styles.footerText}>Encontre by GeoConecta ®</Text>
+      </View>
         </ScrollView>
     );
 };
@@ -804,14 +765,40 @@ const App = () => {
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Lar">
-        <Drawer.Screen name="Feed" component={HomeScreen} />
-        <Drawer.Screen name="Cadastre seu Negócios" component={CadastroScreen} />
-        <Drawer.Screen name="Política de Privacidade" component={PoliticaDePrivacidadeScreen} />
-        <Drawer.Screen name="Torne-se um Afiliado" component={AfiliadoScreen} />
+        <Drawer.Screen 
+          name="Feed" 
+          component={HomeScreen} 
+          options={{
+            drawerIcon: ({ color }) => (
+              <Icon name="earth-outline" size={23} color={color} />
+            ),
+          }} 
+        />
+        <Drawer.Screen 
+          name="Política de Privacidade" 
+          component={PoliticaDePrivacidadeScreen} 
+          options={{
+            drawerIcon: ({ color }) => (
+              <Icon name="shield-checkmark-outline" size={23} color={color} />
+            ),
+          }} 
+        />
+        <Drawer.Screen 
+          name="Sobre-Nós" 
+          component={SobreScreen} 
+          options={{
+            drawerIcon: ({ color }) => (
+              <Icon name="people-circle-outline" size={23} color={color} />
+            ),
+          }} 
+        />
       </Drawer.Navigator>
     </NavigationContainer>
   );
 };
+
+
+
 
 
 const styles = StyleSheet.create({
@@ -837,6 +824,14 @@ const styles = StyleSheet.create({
       textAlign: 'left', // Alinhamento do texto
       lineHeight: 30, // Altura da linha para melhor legibilidade
   },
+title3: {
+  fontSize: 20, // Tamanho da fonte
+  fontWeight: 'bold', // Peso da fonte
+  color: '#333', // Cor do texto
+  marginLeft: 10, // Espaço à esquerda
+  textAlign: 'left', // Alinhamento do texto
+  lineHeight: 30, // Altura da linha para melhor legibilidade
+},
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -848,7 +843,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#e8e8e8',
   },
   picker: {
     height: 50,
@@ -857,7 +852,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#e8e8e8',
   },
   imageContainer: {
     alignItems: 'center',
@@ -882,9 +877,9 @@ const styles = StyleSheet.create({
  
   infoContainer: {
     marginTop: 10,
-    padding: 10,
-    backgroundColor: '#f0f0f0', // Cor de fundo leve para destacar
-    borderRadius: 8,
+    padding: 12,
+    backgroundColor: 'white', // Cor de fundo leve para destacar
+    borderRadius: 30,
     borderWidth: 1,
     borderColor: '#ccc',
   },
@@ -896,16 +891,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 15,
     marginVertical: 10,
-    borderRadius: 20,
-    borderColor: 'black',
-    borderWidth: 1,
-    elevation: 5,
+    borderRadius: 40,
+    borderColor: '#7ad1ff',
+    borderWidth: 1.5,
+    elevation: 3,
   },
   image: {
     width: '100%',
-    height: 280,
-    borderRadius: 15,
+    height: 350,
+    borderRadius: 0,
     marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: 'black',
   },
   comercioTitle: {
     fontSize: 22,
@@ -1044,11 +1041,11 @@ const styles = StyleSheet.create({
   },
   quemSomosContainer: {
     marginVertical: 10,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 15,
+    padding: 15, // Espaçamento interno do container principal
+    backgroundColor: 'white',
+    borderRadius: 28,
     borderColor: '#ccc',
-    borderWidth: 1,
+    borderWidth: 1,  
   },
   quemSomosTitulo: {
     fontSize: 20,
@@ -1056,7 +1053,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   quemSomosTexto: {
-    fontSize: 18,
+    fontSize: 16,
     margin:3,
     color: '#333',
   },
@@ -1170,7 +1167,180 @@ filtrarTexto: {
   color: '#0056b3',          
   textAlign: 'center',    
 },
-  
+categoriasContainer: {
+  marginVertical: 10,
+  paddingHorizontal: 10,
+},
+categoriasTitulo: {
+  fontSize: 18,
+  fontWeight: 'bold',
+},
+categoriaItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 5,
+},
+categoriaTexto: {
+  marginLeft: 5,
+  fontSize: 16,
+},
+container: {
+  flexGrow: 1,
+  padding: 20,
+  backgroundColor: '#ffffff',
+},
+header: {
+  alignItems: 'center',
+  marginBottom: 20,
+},
+logo: {
+  width: 150,
+  height: 150,
+  resizeMode: 'cover',
+  borderRadius: 75, // Arredonda a imagem
+  borderWidth: 2, // Adiciona borda à imagem
+  borderColor: '#0056b3', // Cor da borda da imagem
+},
+aboutContainer: {
+  backgroundColor: '#ffffff',
+  borderRadius: 27,
+  padding: 50,
+  elevation: 8,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  borderWidth: 1, // Adiciona borda à imagem
+  borderColor: '#0056b3', // Cor da borda da imagem
+},
+title: {
+  fontSize: 30,
+  fontWeight: 'bold',
+  marginBottom: 18,
+  textAlign: 'center',
+  color: '#333',
+},
+description: {
+  fontSize: 15,
+  color: '#666',
+  marginBottom: 25,
+  textAlign: 'left',
+ 
+},
+aboutTitle: {
+  fontSize: 22,
+  fontWeight: '600',
+  marginBottom: 20,
+  textAlign: 'center',
+  color: '#333',
+},
+colaborador: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 15,
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: '#e0e0e0',
+},
+colaboradorImage: {
+  width: 100,
+  height: 100,
+  borderRadius: 25,
+  marginRight: 15,
+},
+colaboradorInfo: {
+  flex: 1,
+},
+colaboradorNome: {
+  fontSize: 18,
+  fontWeight: '600',
+  color: '#333',
+},
+colaboradorCargo: {
+  fontSize: 14,
+  color: '#666',
+},
+footer: {
+  backgroundColor: '#007BFF', // Cor de fundo da barra
+  paddingVertical: 12,
+  alignItems: 'center',
+  marginTop: 20,
+  borderRadius: 25,
+},
+footerText: {
+  color: '#fff',
+  fontSize: 17,
+  fontWeight: 'bold',
+},
+socialContainer: {
+  marginTop: 20,
+  alignItems: 'center',
+},
+socialTitle: {
+  fontSize: 24,
+  fontWeight: 'bold',
+  marginBottom: 10,
+  color: '#333',
+},
+socialIcons: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+},
+icon: {
+  marginHorizontal: 10,
+},
+iconContainer1: {
+  width: 45, // Largura do container
+  height: 45, // Altura do container
+  borderRadius: 40, // Para deixar a borda arredondada
+  borderWidth: 1.2, // Largura da borda
+  borderColor: 'gray', // Cor da borda
+  justifyContent: 'center', // Centraliza o ícone
+  alignItems: 'center', // Centraliza o ícone
+  marginRight: 10, // Espaçamento entre o ícone e o texto
+},
+horarioContainer: {
+  flexDirection: 'row', // Organiza o ícone e o texto em linha
+  alignItems: 'center', // Alinha verticalmente o ícone e o texto
+  backgroundColor: 'white', // Cor de fundo do container
+  borderRadius: 25, // Bordas arredondadas
+  padding: 10, // Espaçamento interno do container do horário
+  marginVertical: 10, // Espaçamento vertical entre elementos
+  borderWidth: 1,
+  borderColor: '#ccc',
+},
+horarioTexto: {
+  marginLeft: 10, // Espaçamento entre o ícone e o texto
+  fontSize: 16, // Tamanho da fonte do texto
+  color: '#333', // Cor do texto
+  flexShrink: 1, // Permite que o texto encolha se necessário
+  maxWidth: '80%', // Limita a largura do texto
+},
+noResultsContainer: {
+  padding: 40,
+  marginTop: 90,
+  backgroundColor: '#f8f9fa', // Fundo leve para destacar
+  borderRadius: 30, // Bordas arredondadas
+  alignItems: 'center', // Centraliza o conteúdo
+  justifyContent: 'center',
+  width: '90%', // Limita a largura
+  alignSelf: 'center', // Centraliza horizontalmente
+  shadowColor: '#000', // Sombra para destaque
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 7,
+  elevation: 2, // Sombra no Android
+  borderColor: 'black',
+  borderWidth: 1,
+},
+noResultsText: {
+  fontSize: 18, // Tamanho do texto
+  color: '#666', // Cor do texto
+  textAlign: 'center', // Centraliza o texto
+  fontWeight: '500', // Peso do texto
+},
 });
+
+
 export default App;
 
