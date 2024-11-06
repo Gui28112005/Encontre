@@ -1,0 +1,93 @@
+import React from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons'; // Usando Ionicons para ícones
+
+// Definindo as categorias e ícones
+const categoryIcons = {
+  açaiteria: "ice-cream-outline",
+  academia: "barbell-outline",
+  "agencia de viagens": "airplane-outline",
+  atelie: "color-palette-outline",
+  bar: "beer",
+  cafeteria: "cafe-outline",
+  "cafeteria vegana": "leaf",
+  "casa de shows": "musical-note",
+  "centro esportivo": "football-outline",
+  cervejaria: "beer",
+  cinema: "film",
+  "clinica de estetica": "sparkles",
+  comercio: "storefront",
+  evento: "calendar",
+  "espaco coworking": "people",
+  "escola de musica": "musical-notes",
+  "estudio de fotografia": "camera",
+  "estudio de yoga": "medkit",
+  "empreendimentos sustentaveis": "leaf",
+  farmacia: "medkit",
+  igreja: "heart",
+  lanchonete: "fast-food",
+  livraria: "book",
+  "loja de brinquedos": "gift",
+  "loja de moveis": "home",
+  "loja de roupas": "shirt",
+  "pet shop": "paw",
+  pizzaria: "pizza",
+  "ponto turistico": "globe",
+  "pousadas e hoteis": "bed",
+  restaurante: "storefront",
+  "restaurante vegetariano": "leaf",
+  "salao de beleza": "sparkles",
+  "servicos de beleza": "sparkles",
+  shopping: "bag-handle",
+  sorveteria: "ice-cream-outline",
+  "terapias alternativas": "medkit"
+};
+
+// Função para exibir cada categoria com ícone
+const CategoriasExibicao = () => {
+
+  // Convertendo os dados para o formato exigido pelo FlatList
+  const categorias = Object.keys(categoryIcons).map((category) => ({
+    key: category,
+    icon: categoryIcons[category],
+  }));
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={categorias}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Icon name={item.icon} size={30} color="#000" style={styles.icon} />
+            <Text style={styles.text}>{item.key}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => item.key}
+      />
+    </View>
+  );
+};
+
+// Estilos personalizados
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: 20,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  icon: {
+    marginRight: 15,
+  },
+  text: {
+    fontSize: 18,
+    color: '#333',
+  },
+});
+
+export default CategoriasExibicao;
