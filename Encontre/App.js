@@ -207,34 +207,47 @@ if (loading) {
     }
   };
 
-
-  const categoryIcons = {
-    pizzaria: "pizza",
-    lanchonete: "fast-food",
-    restaurante: "restaurant",
-    igreja: "heart",
-    comercio: "storefront",
-    "ponto turistico": "location",
-    sorveteria: "ice-cream",
-    açaiteria: "ice-cream",
-    shopping: "cart",
-    evento: "calendar",
-    cinema: "film",
-    mecanica: "build",                // Ícone para mecânica
-    Seguros: "shield",                // Ícone para seguros
-    cafeteria: "coffee",              // Ícone para cafeteria
-    mercado: "shopping-cart",         // Ícone para mercado
-    bar: "beer",                      // Ícone para bar
-    academia: "fitness",              // Ícone para academia
-    livraria: "book",                 // Ícone para livraria
-    "pet shop": "paw",                // Ícone para pet shop
-    "serviços de beleza": "scissors", // Ícone para serviços de beleza
-    clube: "people",                  // Ícone para clube
-    "feira de artesanato": "gift",    // Ícone para feira de artesanato
-    "centro cultural": "home",        // Ícone para centro cultural
+// Definindo as categorias e ícones
+const categoryIcons = {
+  açaiteria: "ice-cream-outline",
+  academia: "barbell-outline",
+  "agencia de viagens": "airplane-outline",
+  atelie: "color-palette-outline",
+  bar: "beer",
+  cafeteria: "cafe-outline",
+  "cafeteria vegana": "leaf",
+  "casa de shows": "musical-note",
+  "centro esportivo": "football-outline",
+  cervejaria: "beer",
+  cinema: "film",
+  "clinica de estetica": "sparkles",
+  comercio: "storefront",
+  evento: "calendar",
+  "espaco coworking": "people",
+  "escola de musica": "musical-notes",
+  "estudio de fotografia": "camera",
+  "estudio de yoga": "medkit",
+  "empreendimentos sustentaveis": "leaf",
+  farmacia: "medkit",
+  igreja: "heart",
+  lanchonete: "fast-food",
+  livraria: "book",
+  "loja de brinquedos": "gift",
+  "loja de moveis": "home",
+  "loja de roupas": "shirt",
+  "pet shop": "paw",
+  pizzaria: "pizza",
+  "ponto turistico": "globe",
+  "pousadas e hoteis": "bed",
+  restaurante: "storefront",
+  "restaurante vegetariano": "leaf",
+  "salao de beleza": "sparkles",
+  "servicos de beleza": "sparkles",
+  shopping: "bag-handle",
+  sorveteria: "ice-cream-outline",
+  "terapias alternativas": "medkit"
 };
-
-
+  
   const abrirWhatsApp = (telefone) => {
     const url = `https://api.whatsapp.com/send?phone=${telefone}`;
     Linking.openURL(url).catch(err => console.error("Erro ao abrir WhatsApp: ", err));
